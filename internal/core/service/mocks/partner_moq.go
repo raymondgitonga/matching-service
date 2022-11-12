@@ -23,6 +23,9 @@ var _ service.Repository = &RepositoryMock{}
 //			GetPartnerFunc: func(ctx context.Context, partnerID int) (*dormain.Partner, error) {
 //				panic("mock out the GetPartner method")
 //			},
+//			GetPartnersFunc: func(ctx context.Context, speciality string) (*[]dormain.Partner, error) {
+//				panic("mock out the GetPartners method")
+//			},
 //		}
 //
 //		// use mockedRepository in code that requires Repository
@@ -33,6 +36,9 @@ type RepositoryMock struct {
 	// GetPartnerFunc mocks the GetPartner method.
 	GetPartnerFunc func(ctx context.Context, partnerID int) (*dormain.Partner, error)
 
+	// GetPartnersFunc mocks the GetPartners method.
+	GetPartnersFunc func(ctx context.Context, speciality string) (*[]dormain.Partner, error)
+
 	// calls tracks calls to the methods.
 	calls struct {
 		// GetPartner holds details about calls to the GetPartner method.
@@ -42,8 +48,16 @@ type RepositoryMock struct {
 			// PartnerID is the partnerID argument value.
 			PartnerID int
 		}
+		// GetPartners holds details about calls to the GetPartners method.
+		GetPartners []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// Speciality is the speciality argument value.
+			Speciality string
+		}
 	}
-	lockGetPartner sync.RWMutex
+	lockGetPartner  sync.RWMutex
+	lockGetPartners sync.RWMutex
 }
 
 // GetPartner calls GetPartnerFunc.
@@ -79,5 +93,41 @@ func (mock *RepositoryMock) GetPartnerCalls() []struct {
 	mock.lockGetPartner.RLock()
 	calls = mock.calls.GetPartner
 	mock.lockGetPartner.RUnlock()
+	return calls
+}
+
+// GetPartners calls GetPartnersFunc.
+func (mock *RepositoryMock) GetPartners(ctx context.Context, speciality string) (*[]dormain.Partner, error) {
+	if mock.GetPartnersFunc == nil {
+		panic("RepositoryMock.GetPartnersFunc: method is nil but Repository.GetPartners was just called")
+	}
+	callInfo := struct {
+		Ctx        context.Context
+		Speciality string
+	}{
+		Ctx:        ctx,
+		Speciality: speciality,
+	}
+	mock.lockGetPartners.Lock()
+	mock.calls.GetPartners = append(mock.calls.GetPartners, callInfo)
+	mock.lockGetPartners.Unlock()
+	return mock.GetPartnersFunc(ctx, speciality)
+}
+
+// GetPartnersCalls gets all the calls that were made to GetPartners.
+// Check the length with:
+//
+//	len(mockedRepository.GetPartnersCalls())
+func (mock *RepositoryMock) GetPartnersCalls() []struct {
+	Ctx        context.Context
+	Speciality string
+} {
+	var calls []struct {
+		Ctx        context.Context
+		Speciality string
+	}
+	mock.lockGetPartners.RLock()
+	calls = mock.calls.GetPartners
+	mock.lockGetPartners.RUnlock()
 	return calls
 }

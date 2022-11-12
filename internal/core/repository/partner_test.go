@@ -13,15 +13,23 @@ import (
 	"runtime"
 	"strings"
 	"testing"
-	"time"
 )
 
-const testPartner = `insert into partner (id, name, location, speciality, radius, rating)
-values (nextval('partner_seq'), 'Cummerata, Wolff and Hauck', point(51.73212999999999, -1.0831176441976451), '{
+const insertPartner = `insert into partner (id, name, location, speciality, radius, rating)
+values (1, 'Cummerata, Wolff and Hauck', point(51.73212999999999, -1.0831176441976451), '{
 "wood": false,
 "carpet": true,
 "tiles": true
 }', 1, 4.5);`
+const createPartnerTable = `CREATE TABLE IF NOT EXISTS partner
+(
+    id         int PRIMARY KEY,
+    name       varchar,
+    location   point,
+    speciality jsonb,
+    radius     int,
+    rating     decimal
+);`
 
 func TestRepository_GetPartner(t *testing.T) {
 	dbCLient, postgres := SetupTestDatabase()
@@ -34,12 +42,10 @@ func TestRepository_GetPartner(t *testing.T) {
 }
 
 func SetupTestDatabase() (*sql.DB, *testcontainers.LocalDockerCompose) {
-	log.Println("Starting postgres container...")
 	postgres := testcontainers.NewLocalDockerCompose([]string{getRootDir() + "/docker-compose-test.yml"},
 		strings.ToLower(uuid.New().String()))
 
 	postgres.WithCommand([]string{"up", "-d"}).Invoke()
-	time.Sleep(15 * time.Second)
 
 	postgresURL := "postgres://postgres:postgres@localhost:9876/postgres?sslmode=disable"
 	log.Printf("Postgres container started, running at:  %s\n", postgresURL)
@@ -49,16 +55,21 @@ func SetupTestDatabase() (*sql.DB, *testcontainers.LocalDockerCompose) {
 		log.Fatal("connect:", err)
 	}
 
-	err = db.RunMigrations(conn, "postgres")
-
 	if err != nil {
 		log.Fatal("error migrating:", err)
 	}
-	//_, err = conn.Exec(testPartner)
-	//
-	//if err != nil {
-	//	log.Printf("error executing query %s", err)
-	//}
+
+	_, err = conn.Exec(createPartnerTable)
+
+	if err != nil {
+		log.Printf("error executing query %s", err)
+	}
+
+	_, err = conn.Exec(insertPartner)
+
+	if err != nil {
+		log.Printf("error executing query %s", err)
+	}
 
 	return conn, postgres
 }

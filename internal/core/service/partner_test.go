@@ -26,9 +26,9 @@ func Test_GetPartnerDetails(t *testing.T) {
 			},
 		}
 
-		partnerDetails := service.NewPartnerDetails(1, repo)
+		partnerDetails := service.NewPartnerDetails(repo)
 
-		partnerDTO, _ := partnerDetails.GetPartnerDetails(context.Background())
+		partnerDTO, _ := partnerDetails.GetPartnerDetails(context.Background(), 1)
 
 		assert.Equal(t, "51.73212999999999,-1.0831176441976451", partnerDTO.Location)
 		assert.Equal(t, dormain.Speciality{"carpet", "tiles"}, partnerDTO.Speciality)

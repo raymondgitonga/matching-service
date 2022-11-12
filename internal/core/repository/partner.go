@@ -30,3 +30,26 @@ func (r *Repository) GetPartner(ctx context.Context, partnerID int) (*dormain.Pa
 
 	return partner, nil
 }
+
+func (r *Repository) GetPartners(ctx context.Context, speciality string) (*[]dormain.Partner, error) {
+	partner := dormain.Partner{}
+	partners := make([]dormain.Partner, 0)
+	param := fmt.Sprintf(`{"%s":true}`, speciality)
+	query := `select name, location, speciality, radius, rating  from partner where speciality @> $1;`
+
+	rows, err := r.db.QueryContext(ctx, query, param)
+	if err != nil {
+		return nil, fmt.Errorf("error querying partners: %w", err)
+	}
+
+	for rows.Next() {
+		err := rows.Scan(&partner.Name, &partner.Location, &partner.Speciality, &partner.Radius, &partner.Rating)
+
+		if err != nil {
+			return nil, fmt.Errorf("error scanning partner results: %w", err)
+		}
+		partners = append(partners, partner)
+	}
+
+	return &partners, nil
+}

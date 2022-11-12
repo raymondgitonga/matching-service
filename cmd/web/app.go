@@ -22,9 +22,10 @@ func StartApp() {
 	}
 
 	dbURL := os.Getenv("DB_CONNECTION_URL")
+	dbName := os.Getenv("DB_NAME")
 	dbClient, err := db.NewClient(context.Background(), dbURL)
 
-	err = db.RunMigrations(dbClient, "postgres")
+	err = db.RunMigrations(dbClient, dbName)
 	if err != nil {
 		log.Fatal("Error running migration")
 		return
@@ -34,6 +35,7 @@ func StartApp() {
 
 	r.HandleFunc("/health_check", handler.HealthCheck).Methods(http.MethodGet)
 	r.HandleFunc("/partner", handler.GetPartnerDetails).Methods(http.MethodGet)
+	r.HandleFunc("/partners", handler.GetPartners).Methods(http.MethodGet)
 
 	fmt.Printf("starting server on :8080")
 
