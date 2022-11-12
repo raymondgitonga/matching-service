@@ -1,10 +1,11 @@
-package repository
+package repository_test
 
 import (
 	"context"
 	"database/sql"
 	"github.com/google/uuid"
 	"github.com/raymondgitonga/matching-service/internal/adapters/db"
+	"github.com/raymondgitonga/matching-service/internal/core/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 	"log"
@@ -26,8 +27,8 @@ func TestRepository_GetPartner(t *testing.T) {
 	dbCLient, postgres := SetupTestDatabase()
 	defer destroyDB(postgres)
 
-	repository := NewRepository(dbCLient)
-	partner, err := repository.GetPartner(context.Background(), 1)
+	repo := repository.NewRepository(dbCLient)
+	partner, err := repo.GetPartner(context.Background(), 1)
 	assert.NoError(t, err)
 	assert.Equal(t, "Cummerata, Wolff and Hauck", partner.Name)
 }

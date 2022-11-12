@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"github.com/raymondgitonga/matching-service/internal/core/dormain"
@@ -10,13 +9,13 @@ import (
 
 type PartnerDetails struct {
 	partnerID int
-	db        *sql.DB
+	repo      Repository
 }
 
-func NewPartnerDetails(partnerID int, db *sql.DB) *PartnerDetails {
+func NewPartnerDetails(partnerID int, repo Repository) *PartnerDetails {
 	return &PartnerDetails{
 		partnerID: partnerID,
-		db:        db,
+		repo:      repo,
 	}
 }
 
@@ -24,8 +23,8 @@ type Repository interface {
 	GetPartner(ctx context.Context, partnerID int) (*dormain.Partner, error)
 }
 
-func (p *PartnerDetails) GetPartnerDetails(ctx context.Context, repo Repository) (*dormain.PartnerDTO, error) {
-	partner, err := repo.GetPartner(ctx, p.partnerID)
+func (p *PartnerDetails) GetPartnerDetails(ctx context.Context) (*dormain.PartnerDTO, error) {
+	partner, err := p.repo.GetPartner(ctx, p.partnerID)
 	specialityMap := make(map[string]bool)
 	speciality := make([]string, 0)
 
@@ -38,12 +37,13 @@ func (p *PartnerDetails) GetPartnerDetails(ctx context.Context, repo Repository)
 		return nil, fmt.Errorf("error unmarshaling speciality: %w", err)
 	}
 
+	fmt.Println(specialityMap)
+
 	for key, val := range specialityMap {
 		if val {
 			speciality = append(speciality, key)
 		}
 	}
-
 	partnerLocation := partner.Location[1 : len(partner.Location)-1]
 
 	partnerDTO := &dormain.PartnerDTO{
@@ -53,5 +53,6 @@ func (p *PartnerDetails) GetPartnerDetails(ctx context.Context, repo Repository)
 		Radius:     partner.Radius,
 		Rating:     partner.Rating,
 	}
+
 	return partnerDTO, nil
 }

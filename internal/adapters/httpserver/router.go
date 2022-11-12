@@ -15,7 +15,7 @@ type Handler struct {
 	DB *sql.DB
 }
 
-func (h *Handler) HealthCheck(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) HealthCheck(w http.ResponseWriter, _ *http.Request) {
 	response, err := json.Marshal("Healthy")
 	if err != nil {
 		fmt.Printf("error writing marshalling response: %s", err)
@@ -41,9 +41,9 @@ func (h *Handler) GetPartnerDetails(w http.ResponseWriter, r *http.Request) {
 		// do something
 	}
 
-	repo := service.NewPartnerDetails(partnerID, h.DB)
+	repo := service.NewPartnerDetails(partnerID, repository.NewRepository(h.DB))
 
-	partner, err := repo.GetPartnerDetails(context.Background(), repository.NewRepository(h.DB))
+	partner, err := repo.GetPartnerDetails(context.Background())
 
 	if err != nil {
 		// do something
