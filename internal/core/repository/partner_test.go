@@ -35,24 +35,30 @@ func TestRepository_GetPartner(t *testing.T) {
 
 func SetupTestDatabase() (*sql.DB, *testcontainers.LocalDockerCompose) {
 	log.Println("Starting postgres container...")
-	postgres := testcontainers.NewLocalDockerCompose([]string{getRootDir() + "/docker-compose.yml"},
+	postgres := testcontainers.NewLocalDockerCompose([]string{getRootDir() + "/docker-compose-test.yml"},
 		strings.ToLower(uuid.New().String()))
 
 	postgres.WithCommand([]string{"up", "-d"}).Invoke()
-	time.Sleep(5 * time.Second)
+	time.Sleep(15 * time.Second)
 
-	postgresURL := "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
+	postgresURL := "postgres://postgres:postgres@localhost:9876/postgres?sslmode=disable"
 	log.Printf("Postgres container started, running at:  %s\n", postgresURL)
 
 	conn, err := db.NewClient(context.Background(), postgresURL)
 	if err != nil {
 		log.Fatal("connect:", err)
 	}
-	_, err = conn.Exec(testPartner)
+
+	err = db.RunMigrations(conn, "postgres")
 
 	if err != nil {
-		log.Printf("error executing query %s", err)
+		log.Fatal("error migrating:", err)
 	}
+	//_, err = conn.Exec(testPartner)
+	//
+	//if err != nil {
+	//	log.Printf("error executing query %s", err)
+	//}
 
 	return conn, postgres
 }

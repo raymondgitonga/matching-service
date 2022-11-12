@@ -4,15 +4,32 @@ import (
 	"context"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"github.com/raymondgitonga/matching-service/internal/adapters/db"
 	"github.com/raymondgitonga/matching-service/internal/adapters/httpserver"
+	"log"
 	"net/http"
+	"os"
 )
 
 func StartApp() {
 	r := mux.NewRouter()
 
-	dbClient, err := db.NewClient(context.Background(), "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+		return
+	}
+
+	dbURL := os.Getenv("DB_CONNECTION_URL")
+	dbClient, err := db.NewClient(context.Background(), dbURL)
+
+	err = db.RunMigrations(dbClient, "postgres")
+	if err != nil {
+		log.Fatal("Error running migration")
+		return
+	}
+
 	handler := httpserver.Handler{DB: dbClient}
 
 	r.HandleFunc("/health_check", handler.HealthCheck).Methods(http.MethodGet)

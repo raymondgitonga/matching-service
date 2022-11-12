@@ -48,11 +48,6 @@ func NewClient(ctx context.Context, connectionDSN string) (*sql.DB, error) {
 		return nil, err
 	}
 
-	err = RunMigrations(db, "postgres")
-	if err != nil {
-		return nil, err
-	}
-
 	return db, nil
 }
 

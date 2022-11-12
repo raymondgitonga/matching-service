@@ -37,8 +37,6 @@ func (p *PartnerDetails) GetPartnerDetails(ctx context.Context) (*dormain.Partne
 		return nil, fmt.Errorf("error unmarshaling speciality: %w", err)
 	}
 
-	fmt.Println(specialityMap)
-
 	for key, val := range specialityMap {
 		if val {
 			speciality = append(speciality, key)
