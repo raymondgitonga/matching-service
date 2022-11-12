@@ -48,7 +48,7 @@ func NewClient(ctx context.Context, connectionDSN string) (*sql.DB, error) {
 		return nil, err
 	}
 
-	err = runMigrations(db)
+	err = RunMigrations(db, "postgres")
 	if err != nil {
 		return nil, err
 	}
@@ -56,8 +56,7 @@ func NewClient(ctx context.Context, connectionDSN string) (*sql.DB, error) {
 	return db, nil
 }
 
-func runMigrations(db *sql.DB) error {
-	dbName := "postgres"
+func RunMigrations(db *sql.DB, dbName string) error {
 	sourceInstance, err := iofs.New(fs, "migrations")
 	if err != nil {
 		return fmt.Errorf("sourceInstance error: %v", err)

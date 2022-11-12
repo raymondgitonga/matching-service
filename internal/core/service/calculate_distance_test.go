@@ -7,10 +7,7 @@ import (
 )
 
 func Test_CalculateDistance(t *testing.T) {
-	partnerCoordinates := dormain.Coordinates{
-		Latitude:  51.73213,
-		Longitude: -1.20631,
-	}
+	partnerCoordinates := NewCoordinates(51.73213, -1.20631)
 
 	testCases := []struct {
 		customerCoordinates dormain.Coordinates
@@ -32,7 +29,7 @@ func Test_CalculateDistance(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run("Test distance between coordinates is correct", func(t *testing.T) {
-			distance := distance(tc.customerCoordinates, partnerCoordinates)
+			distance := distance(tc.customerCoordinates, *partnerCoordinates)
 			assert.Equal(t, tc.expected, int(distance))
 		})
 	}
