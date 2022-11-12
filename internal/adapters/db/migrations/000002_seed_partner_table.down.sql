@@ -1,1 +1,2 @@
-DELETE from partner;
+DELETE
+from partner;

@@ -13,4 +13,12 @@ type Partner struct {
 	Rating     float64
 }
 
-type Speciality map[string]bool
+type PartnerDTO struct {
+	Name       string
+	Location   string
+	Speciality Speciality
+	Radius     int
+	Rating     float64
+}
+
+type Speciality []string
