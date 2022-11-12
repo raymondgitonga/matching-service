@@ -6,7 +6,4 @@ services:
     ports:
       - '9876:5432'
     volumes:
-      - db:/var/lib/postgresql/data
-volumes:
-  db:
-    driver: local
+      - /postgresql/data-test
