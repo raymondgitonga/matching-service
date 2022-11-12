@@ -50,20 +50,24 @@ func (h *Handler) GetPartnerDetails(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetMatchingPartners(w http.ResponseWriter, r *http.Request) {
-	speciality := r.URL.Query().Get("speciality")
-	latitude, err := strconv.ParseFloat(r.URL.Query().Get("lat"), 64)
+	var request dormain.CustomerRequest
+
+	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		processResponse(w, []dormain.PartnerDTO{}, err, http.StatusBadRequest)
+		processResponse(w, []dormain.PartnerDTO{}, fmt.Errorf("error decoding body: %w", err), http.StatusBadRequest)
 	}
-	longitude, err := strconv.ParseFloat(r.URL.Query().Get("lon"), 64)
+
+	err = ValidateCustomerRequest(request)
 	if err != nil {
 		processResponse(w, []dormain.PartnerDTO{}, err, http.StatusBadRequest)
+		return
 	}
 
 	partnerService := service.NewPartnerService(repository.NewPartnerRepository(h.DB))
-	partners, err := partnerService.GetMatchingPartners(context.Background(), speciality, latitude, longitude)
+	partners, err := partnerService.GetMatchingPartners(context.Background(), request)
 	if err != nil {
 		processResponse(w, []dormain.PartnerDTO{}, err, http.StatusInternalServerError)
+		return
 	}
 
 	processResponse(w, *partners, nil, http.StatusOK)
@@ -86,6 +90,7 @@ func processResponse(w http.ResponseWriter, partner []dormain.PartnerDTO, err er
 
 		w.WriteHeader(status)
 		_, _ = w.Write(jsonResponse)
+		return
 	}
 
 	response = dormain.PartnerResponse{
@@ -95,7 +100,5 @@ func processResponse(w http.ResponseWriter, partner []dormain.PartnerDTO, err er
 	}
 
 	jsonResponse, _ := json.Marshal(response)
-
-	w.WriteHeader(status)
 	_, _ = w.Write(jsonResponse)
 }

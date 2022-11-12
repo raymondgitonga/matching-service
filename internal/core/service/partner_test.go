@@ -12,16 +12,16 @@ import (
 
 func TestService_GetPartnerDetails(t *testing.T) {
 	t.Run("Test partner details is mapped correctly to partner dto", func(t *testing.T) {
-		specialityMap := map[string]bool{"carpet": true, "tiles": true, "wood": false}
-		specByte, _ := json.Marshal(specialityMap)
+		materialMap := map[string]bool{"carpet": true, "tiles": true, "wood": false}
+		materialByte, _ := json.Marshal(materialMap)
 		repo := &mocks.RepositoryMock{
 			GetPartnerFunc: func(ctx context.Context, partnerID int) (*dormain.Partner, error) {
 				return &dormain.Partner{
-					Name:       "Name",
-					Location:   "(51.73212999999999,-1.0831176441976451)",
-					Speciality: specByte,
-					Radius:     5,
-					Rating:     4.5,
+					Name:     "Name",
+					Location: "(51.73212999999999,-1.0831176441976451)",
+					Material: materialByte,
+					Radius:   5,
+					Rating:   4.5,
 				}, nil
 			},
 		}
@@ -31,74 +31,81 @@ func TestService_GetPartnerDetails(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, "51.73212999999999,-1.0831176441976451", partnerDTO.Location)
-		assert.Equal(t, []string{"carpet", "tiles"}, partnerDTO.Speciality)
+		assert.Equal(t, []string{"tiles", "carpet"}, partnerDTO.Material)
 	})
 }
 
 func TestService_GetMatchingPartners(t *testing.T) {
 	customerLat := 51.73213
 	customerLon := -1.156285162957502
+
+	request := dormain.CustomerRequest{
+		Material: "wood",
+		Lat:      customerLat,
+		Long:     customerLon,
+	}
+
 	t.Run("Test partner details are being filtered and sorted correctly", func(t *testing.T) {
-		specialityMap := map[string]bool{"carpet": true, "tiles": true, "wood": false}
-		specByte, err := json.Marshal(specialityMap)
+		materialMap := map[string]bool{"carpet": true, "tiles": true, "wood": false}
+		specByte, err := json.Marshal(materialMap)
 		assert.NoError(t, err)
 
 		repo := &mocks.RepositoryMock{
-			GetPartnersFunc: func(ctx context.Context, speciality string) (*[]dormain.Partner, error) {
+			GetPartnersFunc: func(ctx context.Context, material string) (*[]dormain.Partner, error) {
 				return &[]dormain.Partner{
 					{
-						Name:       "Business1",
-						Location:   "(51.73212999999999,-1.0831176441976451)",
-						Speciality: specByte,
-						Radius:     5,
-						Rating:     5.0,
+						Name:     "Business1",
+						Location: "(51.73212999999999,-1.0831176441976451)",
+						Material: specByte,
+						Radius:   5,
+						Rating:   5.0,
 					},
 					{
-						Name:       "Business2",
-						Location:   "(51.73213,-1.0877933247235136)",
-						Speciality: specByte,
-						Radius:     1,
-						Rating:     4.5,
+						Name:     "Business2",
+						Location: "(51.73213,-1.0877933247235136)",
+						Material: specByte,
+						Radius:   1,
+						Rating:   4.5,
 					},
 					{
-						Name:       "Business3",
-						Location:   "(51.73213,-1.156285162957502)",
-						Speciality: specByte,
-						Radius:     1,
-						Rating:     3.5,
+						Name:     "Business3",
+						Location: "(51.73213,-1.156285162957502)",
+						Material: specByte,
+						Radius:   1,
+						Rating:   3.5,
 					},
 				}, nil
 			},
 		}
 
 		partnerDetails := service.NewPartnerService(repo)
-		partnersDTO, err := partnerDetails.GetMatchingPartners(context.Background(), "wood", customerLat, customerLon)
+		partnersDTO, err := partnerDetails.GetMatchingPartners(context.Background(), request)
 		assert.NoError(t, err)
 		assert.Equal(t, 2, len(*partnersDTO), "Only two partners match")
 		assert.Equal(t, float64(5), (*partnersDTO)[0].Rating, "Partner with the highest rating shown first")
 	})
 
 	t.Run("Test location unmarshalling error being caught", func(t *testing.T) {
-		specialityMap := map[string]bool{"carpet": true, "tiles": true, "wood": false}
-		specByte, err := json.Marshal(specialityMap)
+		materialMap := map[string]bool{"carpet": true, "tiles": true, "wood": false}
+		specByte, err := json.Marshal(materialMap)
 		assert.NoError(t, err)
 
 		repo := &mocks.RepositoryMock{
-			GetPartnersFunc: func(ctx context.Context, speciality string) (*[]dormain.Partner, error) {
+			GetPartnersFunc: func(ctx context.Context, material string) (*[]dormain.Partner, error) {
 				return &[]dormain.Partner{
 					{
-						Name:       "Business1",
-						Location:   "(51.73212999999999, -1.0831176441976451)",
-						Speciality: specByte,
-						Radius:     5,
-						Rating:     5.0,
+						Name:     "Business1",
+						Location: "(51.73212999999999, -1.0831176441976451)",
+						Material: specByte,
+						Radius:   5,
+						Rating:   5.0,
 					},
 				}, nil
 			},
 		}
 
 		partnerDetails := service.NewPartnerService(repo)
-		partnersDTO, err := partnerDetails.GetMatchingPartners(context.Background(), "wood", customerLat, customerLon)
+		partnersDTO, err := partnerDetails.GetMatchingPartners(context.Background(), request)
 		assert.Error(t, err)
 		assert.Nil(t, partnersDTO)
 	})

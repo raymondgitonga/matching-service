@@ -22,49 +22,49 @@ func NewPartnerService(repo Repository) *PartnerService {
 
 type Repository interface {
 	GetPartner(ctx context.Context, partnerID int) (*dormain.Partner, error)
-	GetPartners(ctx context.Context, speciality string) (*[]dormain.Partner, error)
+	GetPartners(ctx context.Context, material string) (*[]dormain.Partner, error)
 }
 
 func (p *PartnerService) GetPartnerDetails(ctx context.Context, partnerID int) (*dormain.PartnerDTO, error) {
-	specialityMap := make(map[string]bool)
-	speciality := make([]string, 0)
+	materialMap := make(map[string]bool)
+	material := make([]string, 0)
 
 	partner, err := p.repo.GetPartner(ctx, partnerID)
 	if err != nil {
 		return nil, err
 	}
 
-	err = json.Unmarshal(partner.Speciality, &specialityMap)
+	err = json.Unmarshal(partner.Material, &materialMap)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshaling speciality: %w", err)
+		return nil, fmt.Errorf("error unmarshaling material: %w", err)
 	}
 
-	for key, val := range specialityMap {
+	for key, val := range materialMap {
 		if val {
-			speciality = append(speciality, key)
+			material = append(material, key)
 		}
 	}
 
 	partnerLocation := partner.Location[1 : len(partner.Location)-1]
 
 	partnerDTO := &dormain.PartnerDTO{
-		Name:       partner.Name,
-		Location:   partnerLocation,
-		Speciality: speciality,
-		Radius:     partner.Radius,
-		Rating:     partner.Rating,
+		Name:     partner.Name,
+		Location: partnerLocation,
+		Material: material,
+		Radius:   partner.Radius,
+		Rating:   partner.Rating,
 	}
 
 	return partnerDTO, nil
 }
 
-func (p *PartnerService) GetMatchingPartners(ctx context.Context, speciality string, lat float64, lon float64) (*[]dormain.PartnerDTO, error) {
-	partners, err := p.repo.GetPartners(ctx, speciality)
+func (p *PartnerService) GetMatchingPartners(ctx context.Context, request dormain.CustomerRequest) (*[]dormain.PartnerDTO, error) {
+	partners, err := p.repo.GetPartners(ctx, request.Material)
 	if err != nil {
 		return nil, err
 	}
 
-	return sortAndFilterPartners(partners, lat, lon)
+	return sortAndFilterPartners(partners, request.Lat, request.Long)
 }
 
 func ComputeDistance(partnerLocation string, customerLat float64, customerLon float64) (int, error) {
@@ -87,20 +87,20 @@ func ComputeDistance(partnerLocation string, customerLat float64, customerLon fl
 }
 
 func sortAndFilterPartners(partners *[]dormain.Partner, lat float64, lon float64) (*[]dormain.PartnerDTO, error) {
-	specialityMap := make(map[string]bool)
+	materialMap := make(map[string]bool)
 	partnersDTO := make([]dormain.PartnerDTO, 0)
 	for i := range *partners {
-		specialities := make([]string, 0)
+		materials := make([]string, 0)
 		current := (*partners)[i]
 
-		err := json.Unmarshal(current.Speciality, &specialityMap)
+		err := json.Unmarshal(current.Material, &materialMap)
 		if err != nil {
-			return nil, fmt.Errorf("error unmarshaling speciality: %w", err)
+			return nil, fmt.Errorf("error unmarshaling material: %w", err)
 		}
 
-		for key, val := range specialityMap {
+		for key, val := range materialMap {
 			if val {
-				specialities = append(specialities, key)
+				materials = append(materials, key)
 			}
 		}
 
@@ -109,17 +109,17 @@ func sortAndFilterPartners(partners *[]dormain.Partner, lat float64, lon float64
 		//Check if customer's distance is within partners' range
 		distance, err := ComputeDistance(partnerLocation, lat, lon)
 		if err != nil {
-			return nil, fmt.Errorf("error unmarshaling speciality: %w", err)
+			return nil, fmt.Errorf("error unmarshaling material: %w", err)
 		}
 
 		if distance >= 0 && distance <= current.Radius {
 			partnerDTO := dormain.PartnerDTO{
-				Name:       current.Name,
-				Location:   partnerLocation,
-				Speciality: specialities,
-				Radius:     current.Radius,
-				Distance:   distance,
-				Rating:     current.Rating,
+				Name:     current.Name,
+				Location: partnerLocation,
+				Material: materials,
+				Radius:   current.Radius,
+				Distance: distance,
+				Rating:   current.Rating,
 			}
 			partnersDTO = append(partnersDTO, partnerDTO)
 		}

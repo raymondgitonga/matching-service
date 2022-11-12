@@ -6,11 +6,19 @@ type Coordinates struct {
 }
 
 type Partner struct {
-	Name       string
-	Location   string
-	Speciality []byte
-	Radius     int
-	Rating     float64
+	Name     string
+	Location string
+	Material []byte
+	Radius   int
+	Rating   float64
+}
+
+type CustomerRequest struct {
+	Material  string  `json:"material"`
+	Lat       float64 `json:"lat"`
+	Long      float64 `json:"long"`
+	FloorSize float64 `json:"floor_size"`
+	Phone     string  `json:"phone"`
 }
 
 type PartnerResponse struct {
@@ -20,10 +28,10 @@ type PartnerResponse struct {
 }
 
 type PartnerDTO struct {
-	Name       string   `json:"name"`
-	Location   string   `json:"location"`
-	Speciality []string `json:"speciality"`
-	Radius     int      `json:"radius,omitempty"`
-	Rating     float64  `json:"rating"`
-	Distance   int      `json:"distance,omitempty"`
+	Name     string   `json:"name"`
+	Location string   `json:"location"`
+	Material []string `json:"material"`
+	Radius   int      `json:"radius,omitempty"`
+	Rating   float64  `json:"rating"`
+	Distance int      `json:"distance,omitempty"`
 }

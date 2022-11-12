@@ -30,27 +30,27 @@ func TestRepository_GetPartners(t *testing.T) {
 	defer destroyDB(postgres)
 
 	testCases := []struct {
-		speciality   string
+		material     string
 		partnersSize int
 	}{
 		{
-			speciality:   "wood",
+			material:     "wood",
 			partnersSize: 9,
 		},
 		{
-			speciality:   "tiles",
+			material:     "tiles",
 			partnersSize: 7,
 		},
 		{
-			speciality:   "carpet",
+			material:     "carpet",
 			partnersSize: 10,
 		},
 	}
 
 	for _, tc := range testCases {
-		t.Run("Test partner number by speciality: "+tc.speciality, func(t *testing.T) {
+		t.Run("Test partner number by material: "+tc.material, func(t *testing.T) {
 			repo := repository.NewPartnerRepository(dbCLient)
-			partners, err := repo.GetPartners(context.Background(), tc.speciality)
+			partners, err := repo.GetPartners(context.Background(), tc.material)
 
 			assert.NoError(t, err)
 			assert.Equal(t, tc.partnersSize, len(*partners))
