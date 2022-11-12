@@ -13,6 +13,13 @@ import (
 	"time"
 )
 
+const testPartner = `insert into partner (id, name, location, speciality, radius, rating)
+values (nextval('partner_seq'), 'Cummerata, Wolff and Hauck', point(51.73212999999999, -1.0831176441976451), '{
+"wood": false,
+"carpet": true,
+"tiles": true
+}', 1, 4.5);`
+
 func TestRepository_GetPartner(t *testing.T) {
 	dbCLient, postgres := SetupTestDatabase()
 	defer destroyDB(postgres)
@@ -29,7 +36,7 @@ func SetupTestDatabase() (*sql.DB, *testcontainers.LocalDockerCompose) {
 		strings.ToLower(uuid.New().String()))
 
 	postgres.WithCommand([]string{"up", "-d"}).Invoke()
-	time.Sleep(20 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	postgresURL := "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
 	log.Printf("Postgres container started, running at:  %s\n", postgresURL)
@@ -38,9 +45,10 @@ func SetupTestDatabase() (*sql.DB, *testcontainers.LocalDockerCompose) {
 	if err != nil {
 		log.Fatal("connect:", err)
 	}
+	_, err = conn.Exec(testPartner)
 
-	if err := db.RunMigrations(conn, "postgres"); err != nil {
-		log.Fatal("runMigrations:", err)
+	if err != nil {
+		log.Printf("error executing query %s", err)
 	}
 
 	return conn, postgres
