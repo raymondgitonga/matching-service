@@ -19,7 +19,7 @@ func TestRepository_GetPartner(t *testing.T) {
 	dbCLient, postgres := SetupTestDatabase()
 	defer destroyDB(postgres)
 
-	repo := repository.NewRepository(dbCLient)
+	repo := repository.NewPartnerRepository(dbCLient)
 	partner, err := repo.GetPartner(context.Background(), 1)
 	assert.NoError(t, err)
 	assert.Equal(t, "Cummerata, Wolff and Hauck", partner.Name)
@@ -49,7 +49,7 @@ func TestRepository_GetPartners(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run("Test partner number by speciality: "+tc.speciality, func(t *testing.T) {
-			repo := repository.NewRepository(dbCLient)
+			repo := repository.NewPartnerRepository(dbCLient)
 			partners, err := repo.GetPartners(context.Background(), tc.speciality)
 
 			assert.NoError(t, err)

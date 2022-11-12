@@ -13,6 +13,12 @@ type Partner struct {
 	Rating     float64
 }
 
+type PartnerResponse struct {
+	Result  []PartnerDTO `json:"result"`
+	Error   bool         `json:"error"`
+	Message string       `json:"message"`
+}
+
 type PartnerDTO struct {
 	Name       string   `json:"name"`
 	Location   string   `json:"location"`

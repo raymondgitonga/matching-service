@@ -31,6 +31,7 @@ func Test_CalculateDistance(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run("Test distance between coordinates is correct", func(t *testing.T) {
 			distance := service.Distance(tc.customerCoordinates, *partnerCoordinates)
+
 			assert.Equal(t, tc.expected, float32(distance))
 		})
 	}

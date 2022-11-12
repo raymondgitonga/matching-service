@@ -5,8 +5,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/raymondgitonga/matching-service/internal/core/dormain"
 	"github.com/raymondgitonga/matching-service/internal/core/repository"
 	"github.com/raymondgitonga/matching-service/internal/core/service"
+	"log"
 	"net/http"
 	"strconv"
 )
@@ -29,56 +31,71 @@ func (h *Handler) HealthCheck(w http.ResponseWriter, _ *http.Request) {
 }
 
 func (h *Handler) GetPartnerDetails(w http.ResponseWriter, r *http.Request) {
+	partners := make([]dormain.PartnerDTO, 0)
 	ID := r.URL.Query().Get("id")
 
 	partnerID, err := strconv.Atoi(ID)
 	if err != nil {
-		// do something
+		processResponse(w, nil, err, http.StatusBadRequest)
 	}
 
-	if err != nil {
-		// do something
-	}
-
-	partnerService := service.NewPartnerDetails(repository.NewRepository(h.DB))
+	partnerService := service.NewPartnerService(repository.NewPartnerRepository(h.DB))
 	partner, err := partnerService.GetPartnerDetails(context.Background(), partnerID)
 	if err != nil {
-		// do something
+		processResponse(w, nil, err, http.StatusInternalServerError)
 	}
 
-	response, err := json.Marshal(partner)
-	if err != nil {
-		// do something
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	_, err = w.Write(response)
-	if err != nil {
-		fmt.Printf("error writing httpserver response: %s", err)
-	}
+	partners = append(partners, *partner)
+	processResponse(w, partners, nil, http.StatusOK)
 }
 
-func (h *Handler) GetPartners(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetMatchingPartners(w http.ResponseWriter, r *http.Request) {
 	speciality := r.URL.Query().Get("speciality")
-	lat, err := strconv.ParseFloat(r.URL.Query().Get("lat"), 64)
+	latitude, err := strconv.ParseFloat(r.URL.Query().Get("lat"), 64)
 	if err != nil {
-		// do something
+		processResponse(w, []dormain.PartnerDTO{}, err, http.StatusBadRequest)
 	}
-	lon, err := strconv.ParseFloat(r.URL.Query().Get("lon"), 64)
+	longitude, err := strconv.ParseFloat(r.URL.Query().Get("lon"), 64)
 	if err != nil {
-		// do something
-	}
-
-	partnerService := service.NewPartnerDetails(repository.NewRepository(h.DB))
-	partners, err := partnerService.GetMatchingPartners(context.Background(), speciality, lat, lon)
-	if err != nil {
-		// do something
+		processResponse(w, []dormain.PartnerDTO{}, err, http.StatusBadRequest)
 	}
 
-	response, err := json.Marshal(*partners)
+	partnerService := service.NewPartnerService(repository.NewPartnerRepository(h.DB))
+	partners, err := partnerService.GetMatchingPartners(context.Background(), speciality, latitude, longitude)
+	if err != nil {
+		processResponse(w, []dormain.PartnerDTO{}, err, http.StatusInternalServerError)
+	}
+
+	processResponse(w, *partners, nil, http.StatusOK)
+}
+
+func processResponse(w http.ResponseWriter, partner []dormain.PartnerDTO, err error, status int) {
 	w.Header().Set("Content-Type", "application/json")
-	_, err = w.Write(response)
+	var response dormain.PartnerResponse
+
 	if err != nil {
-		fmt.Printf("error writing httpserver response: %s", err)
+		response = dormain.PartnerResponse{
+			Error:   true,
+			Message: err.Error(),
+			Result:  nil,
+		}
+		jsonResponse, err := json.Marshal(response)
+		if err != nil {
+			log.Fatalf("error marshaling response: %s", err)
+		}
+
+		w.WriteHeader(status)
+		_, _ = w.Write(jsonResponse)
 	}
+
+	response = dormain.PartnerResponse{
+		Error:   false,
+		Message: "success",
+		Result:  partner,
+	}
+
+	jsonResponse, _ := json.Marshal(response)
+
+	w.WriteHeader(status)
+	_, _ = w.Write(jsonResponse)
 }

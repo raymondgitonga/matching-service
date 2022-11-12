@@ -26,12 +26,102 @@ func Test_GetPartnerDetails(t *testing.T) {
 			},
 		}
 
-		partnerDetails := service.NewPartnerDetails(repo)
+		partnerDetails := service.NewPartnerService(repo)
+		partnerDTO, err := partnerDetails.GetPartnerDetails(context.Background(), 1)
 
-		partnerDTO, _ := partnerDetails.GetPartnerDetails(context.Background(), 1)
-
+		assert.NoError(t, err)
 		assert.Equal(t, "51.73212999999999,-1.0831176441976451", partnerDTO.Location)
 		assert.Equal(t, []string{"carpet", "tiles"}, partnerDTO.Speciality)
+	})
+}
+
+func Test_GetMatchingPartners(t *testing.T) {
+	customerLat := 51.73213
+	customerLon := -1.156285162957502
+	t.Run("Test partner details are being filtered and sorted correctly", func(t *testing.T) {
+		specialityMap := map[string]bool{"carpet": true, "tiles": true, "wood": false}
+		specByte, err := json.Marshal(specialityMap)
+		assert.NoError(t, err)
+
+		repo := &mocks.RepositoryMock{
+			GetPartnersFunc: func(ctx context.Context, speciality string) (*[]dormain.Partner, error) {
+				return &[]dormain.Partner{
+					{
+						Name:       "Business1",
+						Location:   "(51.73212999999999,-1.0831176441976451)",
+						Speciality: specByte,
+						Radius:     5,
+						Rating:     5.0,
+					},
+					{
+						Name:       "Business2",
+						Location:   "(51.73213,-1.0877933247235136)",
+						Speciality: specByte,
+						Radius:     1,
+						Rating:     4.5,
+					},
+					{
+						Name:       "Business3",
+						Location:   "(51.73213,-1.156285162957502)",
+						Speciality: specByte,
+						Radius:     1,
+						Rating:     3.5,
+					},
+				}, nil
+			},
+		}
+
+		partnerDetails := service.NewPartnerService(repo)
+		partnersDTO, err := partnerDetails.GetMatchingPartners(context.Background(), "wood", customerLat, customerLon)
+		assert.NoError(t, err)
+		assert.Equal(t, 2, len(*partnersDTO), "Only two partners match")
+		assert.Equal(t, float64(5), (*partnersDTO)[0].Rating, "Partner with the highest rating shown first")
+	})
+
+	t.Run("Test location unmarshalling error being caught", func(t *testing.T) {
+		specialityMap := map[string]bool{"carpet": true, "tiles": true, "wood": false}
+		specByte, err := json.Marshal(specialityMap)
+		assert.NoError(t, err)
+
+		repo := &mocks.RepositoryMock{
+			GetPartnersFunc: func(ctx context.Context, speciality string) (*[]dormain.Partner, error) {
+				return &[]dormain.Partner{
+					{
+						Name:       "Business1",
+						Location:   "(51.73212999999999, -1.0831176441976451)",
+						Speciality: specByte,
+						Radius:     5,
+						Rating:     5.0,
+					},
+				}, nil
+			},
+		}
+
+		partnerDetails := service.NewPartnerService(repo)
+		partnersDTO, err := partnerDetails.GetMatchingPartners(context.Background(), "wood", customerLat, customerLon)
+		assert.Error(t, err)
+		assert.Nil(t, partnersDTO)
+	})
+}
+
+func Test_ComputeDistance(t *testing.T) {
+	customerLat := 51.73213
+	customerLon := -1.1116500381594543
+
+	t.Run("Distance computed correctly", func(t *testing.T) {
+		partnerLocation := "51.73213,-1.12645200882915"
+		distance, err := service.ComputeDistance(partnerLocation, customerLat, customerLon)
+
+		assert.Equal(t, 1, distance)
+		assert.NoError(t, err)
+	})
+
+	t.Run("Distance computation failed due to marshalling error", func(t *testing.T) {
+		partnerLocation := "51.73213, -1.12645200882915"
+		distance, err := service.ComputeDistance(partnerLocation, customerLat, customerLon)
+
+		assert.Equal(t, -1, distance)
+		assert.Error(t, err)
 	})
 
 }

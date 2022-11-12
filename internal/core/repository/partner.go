@@ -7,17 +7,17 @@ import (
 	"github.com/raymondgitonga/matching-service/internal/core/dormain"
 )
 
-type Repository struct {
+type PartnerRepository struct {
 	db *sql.DB
 }
 
-func NewRepository(db *sql.DB) *Repository {
-	return &Repository{
+func NewPartnerRepository(db *sql.DB) *PartnerRepository {
+	return &PartnerRepository{
 		db: db,
 	}
 }
 
-func (r *Repository) GetPartner(ctx context.Context, partnerID int) (*dormain.Partner, error) {
+func (r *PartnerRepository) GetPartner(ctx context.Context, partnerID int) (*dormain.Partner, error) {
 	partner := &dormain.Partner{}
 	query := `SELECT name, location, speciality, radius, rating FROM partner WHERE id = $1`
 
@@ -31,7 +31,7 @@ func (r *Repository) GetPartner(ctx context.Context, partnerID int) (*dormain.Pa
 	return partner, nil
 }
 
-func (r *Repository) GetPartners(ctx context.Context, speciality string) (*[]dormain.Partner, error) {
+func (r *PartnerRepository) GetPartners(ctx context.Context, speciality string) (*[]dormain.Partner, error) {
 	partner := dormain.Partner{}
 	partners := make([]dormain.Partner, 0)
 	param := fmt.Sprintf(`{"%s":true}`, speciality)
@@ -44,10 +44,10 @@ func (r *Repository) GetPartners(ctx context.Context, speciality string) (*[]dor
 
 	for rows.Next() {
 		err := rows.Scan(&partner.Name, &partner.Location, &partner.Speciality, &partner.Radius, &partner.Rating)
-
 		if err != nil {
 			return nil, fmt.Errorf("error scanning partner results: %w", err)
 		}
+
 		partners = append(partners, partner)
 	}
 

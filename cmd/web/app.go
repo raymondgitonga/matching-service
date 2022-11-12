@@ -14,7 +14,6 @@ import (
 
 func StartApp() {
 	r := mux.NewRouter()
-
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -32,10 +31,9 @@ func StartApp() {
 	}
 
 	handler := httpserver.Handler{DB: dbClient}
-
 	r.HandleFunc("/health_check", handler.HealthCheck).Methods(http.MethodGet)
 	r.HandleFunc("/partner", handler.GetPartnerDetails).Methods(http.MethodGet)
-	r.HandleFunc("/partners", handler.GetPartners).Methods(http.MethodGet)
+	r.HandleFunc("/partners", handler.GetMatchingPartners).Methods(http.MethodGet)
 
 	fmt.Printf("starting server on :8080")
 

@@ -10,12 +10,12 @@ import (
 	"strings"
 )
 
-type PartnerDetails struct {
+type PartnerService struct {
 	repo Repository
 }
 
-func NewPartnerDetails(repo Repository) *PartnerDetails {
-	return &PartnerDetails{
+func NewPartnerService(repo Repository) *PartnerService {
+	return &PartnerService{
 		repo: repo,
 	}
 }
@@ -25,7 +25,7 @@ type Repository interface {
 	GetPartners(ctx context.Context, speciality string) (*[]dormain.Partner, error)
 }
 
-func (p *PartnerDetails) GetPartnerDetails(ctx context.Context, partnerID int) (*dormain.PartnerDTO, error) {
+func (p *PartnerService) GetPartnerDetails(ctx context.Context, partnerID int) (*dormain.PartnerDTO, error) {
 	specialityMap := make(map[string]bool)
 	speciality := make([]string, 0)
 
@@ -54,23 +54,26 @@ func (p *PartnerDetails) GetPartnerDetails(ctx context.Context, partnerID int) (
 		Radius:     partner.Radius,
 		Rating:     partner.Rating,
 	}
+
 	return partnerDTO, nil
 }
 
-func (p *PartnerDetails) GetMatchingPartners(ctx context.Context, speciality string, lat float64, lon float64) (*[]dormain.PartnerDTO, error) {
+func (p *PartnerService) GetMatchingPartners(ctx context.Context, speciality string, lat float64, lon float64) (*[]dormain.PartnerDTO, error) {
 	partners, err := p.repo.GetPartners(ctx, speciality)
 	if err != nil {
 		return nil, err
 	}
+
 	return sortAndFilterPartners(partners, lat, lon)
 }
 
-func ProcessDistance(partnerLocation string, customerLat float64, customerLon float64) (int, error) {
+func ComputeDistance(partnerLocation string, customerLat float64, customerLon float64) (int, error) {
 	location := strings.Split(partnerLocation, ",")
 	partnerLat, err := strconv.ParseFloat(location[0], 64)
 	if err != nil {
 		return -1, fmt.Errorf("error parsing partnerLat: %w", err)
 	}
+
 	partnerLon, err := strconv.ParseFloat(location[1], 64)
 	if err != nil {
 		return -1, fmt.Errorf("error parsing partnerLon: %w", err)
@@ -78,8 +81,8 @@ func ProcessDistance(partnerLocation string, customerLat float64, customerLon fl
 
 	customerCoordinates := NewCoordinates(customerLat, customerLon)
 	partnerCoordinates := NewCoordinates(partnerLat, partnerLon)
-
 	distance := Distance(*customerCoordinates, *partnerCoordinates)
+
 	return int(distance), nil
 }
 
@@ -104,12 +107,12 @@ func sortAndFilterPartners(partners *[]dormain.Partner, lat float64, lon float64
 		partnerLocation := current.Location[1 : len(current.Location)-1]
 
 		//Check if customer's distance is within partners' range
-		distance, err := ProcessDistance(partnerLocation, lat, lon)
+		distance, err := ComputeDistance(partnerLocation, lat, lon)
 		if err != nil {
 			return nil, fmt.Errorf("error unmarshaling speciality: %w", err)
 		}
 
-		if distance <= current.Radius {
+		if distance >= 0 && distance <= current.Radius {
 			partnerDTO := dormain.PartnerDTO{
 				Name:       current.Name,
 				Location:   partnerLocation,
