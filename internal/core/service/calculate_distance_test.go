@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func Test_CalculateDistance(t *testing.T) {
+func TestService_CalculateDistance(t *testing.T) {
 	partnerCoordinates := service.NewCoordinates(51.73213, -1.20631)
 
 	testCases := []struct {

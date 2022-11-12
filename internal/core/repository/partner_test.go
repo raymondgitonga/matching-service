@@ -66,7 +66,6 @@ func SetupTestDatabase() (*sql.DB, *testcontainers.LocalDockerCompose) {
 	postgres.WithCommand([]string{"up", "-d"}).Invoke()
 
 	postgresURL := "postgres://postgres:postgres@localhost:9876/postgres?sslmode=disable"
-	log.Printf("Postgres container started, running at:  %s\n", postgresURL)
 
 	conn, err := db.NewClient(context.Background(), postgresURL)
 	if err != nil {

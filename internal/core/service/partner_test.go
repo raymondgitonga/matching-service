@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-func Test_GetPartnerDetails(t *testing.T) {
+func TestService_GetPartnerDetails(t *testing.T) {
 	t.Run("Test partner details is mapped correctly to partner dto", func(t *testing.T) {
 		specialityMap := map[string]bool{"carpet": true, "tiles": true, "wood": false}
 		specByte, _ := json.Marshal(specialityMap)
@@ -35,7 +35,7 @@ func Test_GetPartnerDetails(t *testing.T) {
 	})
 }
 
-func Test_GetMatchingPartners(t *testing.T) {
+func TestService_GetMatchingPartners(t *testing.T) {
 	customerLat := 51.73213
 	customerLon := -1.156285162957502
 	t.Run("Test partner details are being filtered and sorted correctly", func(t *testing.T) {
@@ -104,7 +104,7 @@ func Test_GetMatchingPartners(t *testing.T) {
 	})
 }
 
-func Test_ComputeDistance(t *testing.T) {
+func TestService_ComputeDistance(t *testing.T) {
 	customerLat := 51.73213
 	customerLon := -1.1116500381594543
 
