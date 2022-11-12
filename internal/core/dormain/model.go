@@ -14,11 +14,10 @@ type Partner struct {
 }
 
 type PartnerDTO struct {
-	Name       string
-	Location   string
-	Speciality Speciality
-	Radius     int
-	Rating     float64
+	Name       string   `json:"name"`
+	Location   string   `json:"location"`
+	Speciality []string `json:"speciality"`
+	Radius     int      `json:"radius,omitempty"`
+	Rating     float64  `json:"rating"`
+	Distance   int      `json:"distance,omitempty"`
 }
-
-type Speciality []string

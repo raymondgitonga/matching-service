@@ -15,22 +15,6 @@ import (
 	"testing"
 )
 
-const insertPartner = `insert into partner (id, name, location, speciality, radius, rating)
-values (1, 'Cummerata, Wolff and Hauck', point(51.73212999999999, -1.0831176441976451), '{
-"wood": false,
-"carpet": true,
-"tiles": true
-}', 1, 4.5);`
-const createPartnerTable = `CREATE TABLE IF NOT EXISTS partner
-(
-    id         int PRIMARY KEY,
-    name       varchar,
-    location   point,
-    speciality jsonb,
-    radius     int,
-    rating     decimal
-);`
-
 func TestRepository_GetPartner(t *testing.T) {
 	dbCLient, postgres := SetupTestDatabase()
 	defer destroyDB(postgres)
@@ -39,6 +23,40 @@ func TestRepository_GetPartner(t *testing.T) {
 	partner, err := repo.GetPartner(context.Background(), 1)
 	assert.NoError(t, err)
 	assert.Equal(t, "Cummerata, Wolff and Hauck", partner.Name)
+}
+
+func TestRepository_GetPartners(t *testing.T) {
+	dbCLient, postgres := SetupTestDatabase()
+	defer destroyDB(postgres)
+
+	testCases := []struct {
+		speciality   string
+		partnersSize int
+	}{
+		{
+			speciality:   "wood",
+			partnersSize: 9,
+		},
+		{
+			speciality:   "tiles",
+			partnersSize: 7,
+		},
+		{
+			speciality:   "carpet",
+			partnersSize: 10,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run("Test partner number by speciality: "+tc.speciality, func(t *testing.T) {
+			repo := repository.NewRepository(dbCLient)
+			partners, err := repo.GetPartners(context.Background(), tc.speciality)
+
+			assert.NoError(t, err)
+			assert.Equal(t, tc.partnersSize, len(*partners))
+		})
+	}
+
 }
 
 func SetupTestDatabase() (*sql.DB, *testcontainers.LocalDockerCompose) {
@@ -55,22 +73,10 @@ func SetupTestDatabase() (*sql.DB, *testcontainers.LocalDockerCompose) {
 		log.Fatal("connect:", err)
 	}
 
+	err = db.RunMigrations(conn, "postgres")
 	if err != nil {
 		log.Fatal("error migrating:", err)
 	}
-
-	_, err = conn.Exec(createPartnerTable)
-
-	if err != nil {
-		log.Printf("error executing query %s", err)
-	}
-
-	_, err = conn.Exec(insertPartner)
-
-	if err != nil {
-		log.Printf("error executing query %s", err)
-	}
-
 	return conn, postgres
 }
 
