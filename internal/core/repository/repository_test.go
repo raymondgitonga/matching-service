@@ -8,6 +8,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 	"log"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -32,7 +34,7 @@ func TestRepository_GetPartner(t *testing.T) {
 
 func SetupTestDatabase() (*sql.DB, *testcontainers.LocalDockerCompose) {
 	log.Println("Starting postgres container...")
-	postgres := testcontainers.NewLocalDockerCompose([]string{"/Users/raymondgitonga/Projects/matching-service/docker-compose.yml"},
+	postgres := testcontainers.NewLocalDockerCompose([]string{getRootDir() + "/docker-compose.yml"},
 		strings.ToLower(uuid.New().String()))
 
 	postgres.WithCommand([]string{"up", "-d"}).Invoke()
@@ -56,4 +58,9 @@ func SetupTestDatabase() (*sql.DB, *testcontainers.LocalDockerCompose) {
 
 func destroyDB(compose *testcontainers.LocalDockerCompose) {
 	compose.Down()
+}
+
+func getRootDir() string {
+	_, b, _, _ := runtime.Caller(0)
+	return filepath.Join(filepath.Dir(b), "../../..")
 }
