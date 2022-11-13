@@ -69,26 +69,6 @@ func (p *PartnerService) GetMatchingPartners(ctx context.Context, request dormai
 	return sortAndFilterPartners(partners, request.Lat, request.Long)
 }
 
-// ComputeDistance :Computes distance between the customers coordinates and partners coordinates
-func ComputeDistance(partnerLocation string, customerLat float64, customerLon float64) (int, error) {
-	location := strings.Split(partnerLocation, ",")
-	partnerLat, err := strconv.ParseFloat(location[0], 64)
-	if err != nil {
-		return -1, fmt.Errorf("error parsing partnerLat: %w", err)
-	}
-
-	partnerLon, err := strconv.ParseFloat(location[1], 64)
-	if err != nil {
-		return -1, fmt.Errorf("error parsing partnerLon: %w", err)
-	}
-
-	customerCoordinates := NewCoordinates(customerLat, customerLon)
-	partnerCoordinates := NewCoordinates(partnerLat, partnerLon)
-	distance := Distance(*customerCoordinates, *partnerCoordinates)
-
-	return int(distance), nil
-}
-
 // sortAndFilterPartners :Filters partners by distance to customer and radius and sorts by rating and distance to customer
 func sortAndFilterPartners(partners *[]dormain.Partner, lat float64, lon float64) (*[]dormain.PartnerDTO, error) {
 	materialMap := make(map[string]bool)
@@ -110,10 +90,10 @@ func sortAndFilterPartners(partners *[]dormain.Partner, lat float64, lon float64
 
 		partnerLocation := current.Location[1 : len(current.Location)-1]
 
-		//Check if customer's distance is within partners' range
+		// Check if customer's distance is within partners' range
 		distance, err := ComputeDistance(partnerLocation, lat, lon)
 		if err != nil {
-			return nil, fmt.Errorf("error unmarshaling material: %w", err)
+			return nil, err
 		}
 
 		if distance >= 0 && distance <= current.Radius {
@@ -129,9 +109,30 @@ func sortAndFilterPartners(partners *[]dormain.Partner, lat float64, lon float64
 		}
 	}
 
+	// Sort partners returned by highest rated
 	sort.Slice(partnersDTO, func(i, j int) bool {
 		return partnersDTO[i].Rating > partnersDTO[j].Rating
 	})
 
 	return &partnersDTO, nil
+}
+
+// ComputeDistance :Computes distance between the customers coordinates and partners coordinates
+func ComputeDistance(partnerLocation string, customerLat float64, customerLon float64) (int, error) {
+	location := strings.Split(partnerLocation, ",")
+	partnerLat, err := strconv.ParseFloat(location[0], 64)
+	if err != nil {
+		return -1, fmt.Errorf("error parsing partnerLat: %w", err)
+	}
+
+	partnerLon, err := strconv.ParseFloat(location[1], 64)
+	if err != nil {
+		return -1, fmt.Errorf("error parsing partnerLon: %w", err)
+	}
+
+	customerCoordinates := NewCoordinates(customerLat, customerLon)
+	partnerCoordinates := NewCoordinates(partnerLat, partnerLon)
+	distance := Distance(*customerCoordinates, *partnerCoordinates)
+
+	return int(distance), nil
 }
