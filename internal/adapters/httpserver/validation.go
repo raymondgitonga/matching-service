@@ -8,6 +8,7 @@ import (
 
 const phoneRegex = `^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[\-\.\ \\\/]?)?((?:\(?\d{1,}\)?[\-\.\ \\\/]?){0,})(?:[\-\.\ \\\/]?(?:#|ext\.?|extension|x)[\-\.\ \\\/]?(\d+))?$`
 
+// ValidateCustomerRequest : Checks whether the material and phone numbers provided are valid
 func ValidateCustomerRequest(request dormain.CustomerRequest) error {
 	materials := []string{"tiles", "wood", "carpet"}
 	isValid := false
