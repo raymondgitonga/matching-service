@@ -25,6 +25,7 @@ type Repository interface {
 	GetPartners(ctx context.Context, material string) (*[]dormain.Partner, error)
 }
 
+// GetPartnerDetails :Gets a single partners details
 func (p *PartnerService) GetPartnerDetails(ctx context.Context, partnerID int) (*dormain.PartnerDTO, error) {
 	materialMap := make(map[string]bool)
 	material := make([]string, 0)
@@ -58,6 +59,7 @@ func (p *PartnerService) GetPartnerDetails(ctx context.Context, partnerID int) (
 	return partnerDTO, nil
 }
 
+// GetMatchingPartners :Gets partners matching criteria provided by request
 func (p *PartnerService) GetMatchingPartners(ctx context.Context, request dormain.CustomerRequest) (*[]dormain.PartnerDTO, error) {
 	partners, err := p.repo.GetPartners(ctx, request.Material)
 	if err != nil {
@@ -67,6 +69,7 @@ func (p *PartnerService) GetMatchingPartners(ctx context.Context, request dormai
 	return sortAndFilterPartners(partners, request.Lat, request.Long)
 }
 
+// ComputeDistance :Computes distance between the customers coordinates and partners coordinates
 func ComputeDistance(partnerLocation string, customerLat float64, customerLon float64) (int, error) {
 	location := strings.Split(partnerLocation, ",")
 	partnerLat, err := strconv.ParseFloat(location[0], 64)
@@ -86,6 +89,7 @@ func ComputeDistance(partnerLocation string, customerLat float64, customerLon fl
 	return int(distance), nil
 }
 
+// sortAndFilterPartners :Filters partners by distance to customer and radius and sorts by rating and distance to customer
 func sortAndFilterPartners(partners *[]dormain.Partner, lat float64, lon float64) (*[]dormain.PartnerDTO, error) {
 	materialMap := make(map[string]bool)
 	partnersDTO := make([]dormain.PartnerDTO, 0)

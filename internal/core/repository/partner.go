@@ -17,6 +17,7 @@ func NewPartnerRepository(db *sql.DB) *PartnerRepository {
 	}
 }
 
+// GetPartner :Gets a single partner matching the provided partnerID
 func (r *PartnerRepository) GetPartner(ctx context.Context, partnerID int) (*dormain.Partner, error) {
 	partner := &dormain.Partner{}
 	query := `SELECT name, location, material, radius, rating FROM partner WHERE id = $1`
@@ -31,6 +32,7 @@ func (r *PartnerRepository) GetPartner(ctx context.Context, partnerID int) (*dor
 	return partner, nil
 }
 
+// GetPartners :Gets a list of partners matching the provided material
 func (r *PartnerRepository) GetPartners(ctx context.Context, material string) (*[]dormain.Partner, error) {
 	partner := dormain.Partner{}
 	partners := make([]dormain.Partner, 0)

@@ -22,6 +22,7 @@ func StartApp() {
 
 	dbURL := os.Getenv("DB_CONNECTION_URL")
 	dbName := os.Getenv("DB_NAME")
+	baseURL := os.Getenv("BASE_URL")
 	dbClient, err := db.NewClient(context.Background(), dbURL)
 
 	err = db.RunMigrations(dbClient, dbName)
@@ -31,9 +32,9 @@ func StartApp() {
 	}
 
 	handler := httpserver.Handler{DB: dbClient}
-	r.HandleFunc("/health_check", handler.HealthCheck).Methods(http.MethodGet)
-	r.HandleFunc("/partner", handler.GetPartnerDetails).Methods(http.MethodGet)
-	r.HandleFunc("/partners", handler.GetMatchingPartners).Methods(http.MethodGet)
+	r.HandleFunc(fmt.Sprintf("%s/health-check", baseURL), handler.HealthCheck).Methods(http.MethodGet)
+	r.HandleFunc(fmt.Sprintf("%s/partner", baseURL), handler.GetPartnerDetails).Methods(http.MethodGet)
+	r.HandleFunc(fmt.Sprintf("%s/partners", baseURL), handler.GetMatchingPartners).Methods(http.MethodPost)
 
 	fmt.Printf("starting server on :8080")
 

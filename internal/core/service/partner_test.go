@@ -31,7 +31,7 @@ func TestService_GetPartnerDetails(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, "51.73212999999999,-1.0831176441976451", partnerDTO.Location)
-		assert.Equal(t, []string{"tiles", "carpet"}, partnerDTO.Material)
+		assert.Contains(t, []string{"tiles", "carpet"}, partnerDTO.Material[0])
 	})
 }
 
