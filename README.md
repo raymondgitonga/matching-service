@@ -4,7 +4,7 @@ This service matches partners (craftsman) to a customer based
 on their project requirements.
 
 ## Requirements
-Have the following installed on your machine foe the project to RUN
+Have the following installed on your machine for the project to RUN
 1. Docker
 2. Docker-compose
 
@@ -14,13 +14,13 @@ Have the following installed on your machine foe the project to RUN
 3. Docker to build and run the database
 
 ### How To Run The Service
-To run the service run the following command on the root level of the project
+Run the following command on the root level of the project
 
 ``
 make build
 ``
 <br></br>
-This will start up build and start up the app with all its dependencies including starting the database and performing migrations
+This will build and start up the app with all its dependencies including starting the database and performing migrations
 
 To run tests, run the following command on the root level of the project
 
@@ -81,7 +81,7 @@ GET {BASE_URL}/partner?id={id}
     "message": string
 }
 ```
-The `result` field holds an array that holds the requested partners details, incase of an error this field will be nil
+The `result` field holds an array that holds the requested partners details, in case of an error this field will an empty array
 
 The `error` field holds a boolean indicating whether the request was successful or not
 
@@ -150,7 +150,7 @@ The `phone` is the clients phone number
     "message": string
 }
 ```
-The `result` field holds an array that holds matching partners, based on the clients request, in case of an error this field will hold nothing
+The `result` field holds an array that holds matching partners, based on the clients request, in case of an error this field will return an empty array
 
 The `error` field holds a boolean indicating whether the request was successful or not
 

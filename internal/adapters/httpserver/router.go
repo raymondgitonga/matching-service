@@ -81,7 +81,7 @@ func processResponse(w http.ResponseWriter, partner []dormain.PartnerDTO, err er
 		response = dormain.PartnerResponse{
 			Error:   true,
 			Message: err.Error(),
-			Result:  nil,
+			Result:  []dormain.PartnerDTO{},
 		}
 		jsonResponse, err := json.Marshal(response)
 		if err != nil {
