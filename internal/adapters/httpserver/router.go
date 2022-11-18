@@ -14,9 +14,14 @@ import (
 )
 
 type Handler struct {
-	DB *sql.DB
+	dB *sql.DB
 }
 
+func NewHandler(db *sql.DB) *Handler {
+	return &Handler{
+		db,
+	}
+}
 func (h *Handler) HealthCheck(w http.ResponseWriter, _ *http.Request) {
 	response, err := json.Marshal("Healthy")
 	if err != nil {
@@ -39,7 +44,7 @@ func (h *Handler) GetPartnerDetails(w http.ResponseWriter, r *http.Request) {
 		processResponse(w, nil, err, http.StatusBadRequest)
 	}
 
-	partnerService := service.NewPartnerService(repository.NewPartnerRepository(h.DB))
+	partnerService := service.NewPartnerService(repository.NewPartnerRepository(h.dB))
 	partner, err := partnerService.GetPartnerDetails(context.Background(), partnerID)
 	if err != nil {
 		processResponse(w, nil, err, http.StatusInternalServerError)
@@ -63,7 +68,7 @@ func (h *Handler) GetMatchingPartners(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	partnerService := service.NewPartnerService(repository.NewPartnerRepository(h.DB))
+	partnerService := service.NewPartnerService(repository.NewPartnerRepository(h.dB))
 	partners, err := partnerService.GetMatchingPartners(context.Background(), request)
 	if err != nil {
 		processResponse(w, []dormain.PartnerDTO{}, err, http.StatusInternalServerError)

@@ -8,15 +8,12 @@ import (
 	"github.com/raymondgitonga/matching-service/internal/core/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
-	"log"
-	"path/filepath"
-	"runtime"
 	"strings"
 	"testing"
 )
 
 func TestRepository_GetPartner(t *testing.T) {
-	dbCLient, postgres := SetupTestDatabase()
+	dbCLient, postgres := setupTestDatabase(t)
 	defer destroyDB(postgres)
 
 	repo := repository.NewPartnerRepository(dbCLient)
@@ -26,7 +23,7 @@ func TestRepository_GetPartner(t *testing.T) {
 }
 
 func TestRepository_GetPartners(t *testing.T) {
-	dbCLient, postgres := SetupTestDatabase()
+	dbCLient, postgres := setupTestDatabase(t)
 	defer destroyDB(postgres)
 
 	testCases := []struct {
@@ -59,31 +56,21 @@ func TestRepository_GetPartners(t *testing.T) {
 
 }
 
-func SetupTestDatabase() (*sql.DB, *testcontainers.LocalDockerCompose) {
-	postgres := testcontainers.NewLocalDockerCompose([]string{getRootDir() + "/docker-compose-test.yml"},
+func setupTestDatabase(t *testing.T) (*sql.DB, *testcontainers.LocalDockerCompose) {
+	postgres := testcontainers.NewLocalDockerCompose([]string{"../../../docker-compose-test.yml"},
 		strings.ToLower(uuid.New().String()))
-
 	postgres.WithCommand([]string{"up", "-d"}).Invoke()
-
 	postgresURL := "postgres://postgres:postgres@localhost:9876/postgres?sslmode=disable"
 
 	conn, err := db.NewClient(context.Background(), postgresURL)
-	if err != nil {
-		log.Fatal("connect:", err)
-	}
+	assert.NoError(t, err)
 
 	err = db.RunMigrations(conn, "postgres")
-	if err != nil {
-		log.Fatal("error migrating:", err)
-	}
+	assert.NoError(t, err)
+
 	return conn, postgres
 }
 
 func destroyDB(compose *testcontainers.LocalDockerCompose) {
 	compose.Down()
-}
-
-func getRootDir() string {
-	_, b, _, _ := runtime.Caller(0)
-	return filepath.Join(filepath.Dir(b), "../../..")
 }

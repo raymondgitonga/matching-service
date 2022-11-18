@@ -16,18 +16,18 @@ import (
 var fs embed.FS
 
 type ConnectionPoolConfig struct {
-	MaxOpenConns    int
-	MaxIdleConns    int
-	ConnMaxIdleTime time.Duration
-	ConnMaxLifetime time.Duration
+	maxOpenConns    int
+	maxIdleConns    int
+	connMaxIdleTime time.Duration
+	connMaxLifetime time.Duration
 }
 
 func NewConnectionPoolConfig() ConnectionPoolConfig {
 	return ConnectionPoolConfig{
-		MaxOpenConns:    25,
-		MaxIdleConns:    25,
-		ConnMaxIdleTime: 5 * time.Minute,
-		ConnMaxLifetime: 5 * time.Minute,
+		maxOpenConns:    25,
+		maxIdleConns:    25,
+		connMaxIdleTime: 5 * time.Minute,
+		connMaxLifetime: 5 * time.Minute,
 	}
 }
 
@@ -37,11 +37,11 @@ func NewClient(ctx context.Context, connectionDSN string) (*sql.DB, error) {
 		return nil, err
 	}
 
-	connectionPoolConfig := NewConnectionPoolConfig()
-	db.SetMaxOpenConns(connectionPoolConfig.MaxOpenConns)
-	db.SetMaxIdleConns(connectionPoolConfig.MaxIdleConns)
-	db.SetConnMaxIdleTime(connectionPoolConfig.ConnMaxIdleTime)
-	db.SetConnMaxLifetime(connectionPoolConfig.ConnMaxLifetime)
+	config := NewConnectionPoolConfig()
+	db.SetMaxOpenConns(config.maxOpenConns)
+	db.SetMaxIdleConns(config.maxIdleConns)
+	db.SetConnMaxIdleTime(config.connMaxIdleTime)
+	db.SetConnMaxLifetime(config.connMaxLifetime)
 
 	err = pingUntilAvailable(ctx, db)
 	if err != nil {
