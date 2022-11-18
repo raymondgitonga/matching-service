@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 )
 
 func main() {
@@ -13,18 +14,28 @@ func main() {
 		log.Fatalf("error loading .env file: %s", err)
 	}
 
-	appConfigs := NewAppConfigs(
+	appConfigs, err := NewAppConfigs(
 		os.Getenv("DB_CONNECTION_URL"),
 		os.Getenv("DB_NAME"),
 		os.Getenv("BASE_URL"),
 	)
-	server, err := appConfigs.StartApp()
+
+	if err != nil {
+		log.Fatalf("error getting app configs: %s", appConfigs)
+	}
+	router, err := appConfigs.StartApp()
 
 	if err != nil {
 		log.Fatalf("error starting app: %s", err)
 	}
 
-	err = http.ListenAndServe(":8080", server)
+	server := &http.Server{
+		Addr:              ":8080",
+		ReadHeaderTimeout: 3 * time.Second,
+		Handler:           router,
+	}
+
+	err = server.ListenAndServe()
 	if err != nil {
 		log.Fatalf("error starting server: %s", err)
 	}

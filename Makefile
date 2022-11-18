@@ -15,4 +15,7 @@ tests:
 run:
 	go run ./cmd/web
 
+lint:
+	golangci-lint run
+
 build: docker-compose-up run

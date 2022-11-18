@@ -32,7 +32,7 @@ func (p *PartnerService) GetPartnerDetails(ctx context.Context, partnerID int) (
 
 	partner, err := p.repo.GetPartner(ctx, partnerID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w", err)
 	}
 
 	err = json.Unmarshal(partner.Material, &materialMap)
@@ -63,7 +63,7 @@ func (p *PartnerService) GetPartnerDetails(ctx context.Context, partnerID int) (
 func (p *PartnerService) GetMatchingPartners(ctx context.Context, request dormain.CustomerRequest) (*[]dormain.PartnerDTO, error) {
 	partners, err := p.repo.GetPartners(ctx, request.Material)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w", err)
 	}
 
 	return sortAndFilterPartners(partners, request.Lat, request.Long)

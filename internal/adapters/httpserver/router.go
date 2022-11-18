@@ -1,7 +1,6 @@
 package httpserver
 
 import (
-	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -17,10 +16,13 @@ type Handler struct {
 	dB *sql.DB
 }
 
-func NewHandler(db *sql.DB) *Handler {
+func NewHandler(db *sql.DB) (*Handler, error) {
+	if db == nil {
+		return nil, fmt.Errorf("db is null")
+	}
 	return &Handler{
 		db,
-	}
+	}, nil
 }
 func (h *Handler) HealthCheck(w http.ResponseWriter, _ *http.Request) {
 	response, err := json.Marshal("Healthy")
@@ -44,8 +46,13 @@ func (h *Handler) GetPartnerDetails(w http.ResponseWriter, r *http.Request) {
 		processResponse(w, nil, err, http.StatusBadRequest)
 	}
 
-	partnerService := service.NewPartnerService(repository.NewPartnerRepository(h.dB))
-	partner, err := partnerService.GetPartnerDetails(context.Background(), partnerID)
+	partnerRepo, err := repository.NewPartnerRepository(h.dB)
+	if err != nil {
+		processResponse(w, nil, err, http.StatusInternalServerError)
+	}
+
+	partnerService := service.NewPartnerService(partnerRepo)
+	partner, err := partnerService.GetPartnerDetails(r.Context(), partnerID)
 	if err != nil {
 		processResponse(w, nil, err, http.StatusInternalServerError)
 	}
@@ -68,8 +75,13 @@ func (h *Handler) GetMatchingPartners(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	partnerService := service.NewPartnerService(repository.NewPartnerRepository(h.dB))
-	partners, err := partnerService.GetMatchingPartners(context.Background(), request)
+	partnerRepo, err := repository.NewPartnerRepository(h.dB)
+	if err != nil {
+		processResponse(w, nil, err, http.StatusInternalServerError)
+	}
+
+	partnerService := service.NewPartnerService(partnerRepo)
+	partners, err := partnerService.GetMatchingPartners(r.Context(), request)
 	if err != nil {
 		processResponse(w, []dormain.PartnerDTO{}, err, http.StatusInternalServerError)
 		return
@@ -104,6 +116,11 @@ func processResponse(w http.ResponseWriter, partner []dormain.PartnerDTO, err er
 		Result:  partner,
 	}
 
-	jsonResponse, _ := json.Marshal(response)
+	jsonResponse, err := json.Marshal(response)
+
+	if err != nil {
+		log.Fatalf("error marshaling response: %s", err)
+		return
+	}
 	_, _ = w.Write(jsonResponse)
 }

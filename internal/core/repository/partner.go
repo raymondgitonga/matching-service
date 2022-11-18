@@ -11,10 +11,13 @@ type PartnerRepository struct {
 	db *sql.DB
 }
 
-func NewPartnerRepository(db *sql.DB) *PartnerRepository {
+func NewPartnerRepository(db *sql.DB) (*PartnerRepository, error) {
+	if db == nil {
+		return nil, fmt.Errorf("db is null")
+	}
 	return &PartnerRepository{
 		db: db,
-	}
+	}, nil
 }
 
 // GetPartner :Gets a single partner matching the provided partnerID
