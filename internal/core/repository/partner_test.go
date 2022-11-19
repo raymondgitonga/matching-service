@@ -3,13 +3,14 @@ package repository_test
 import (
 	"context"
 	"database/sql"
+	"strings"
+	"testing"
+
 	"github.com/google/uuid"
 	"github.com/raymondgitonga/matching-service/internal/adapters/db"
 	"github.com/raymondgitonga/matching-service/internal/core/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
-	"strings"
-	"testing"
 )
 
 func TestRepository_GetPartner(t *testing.T) {
