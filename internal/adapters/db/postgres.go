@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"embed"
+	"errors"
 	"fmt"
 	"github.com/golang-migrate/migrate/v4"
 	pgMigrate "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -16,32 +17,32 @@ import (
 var fs embed.FS
 
 type ConnectionPoolConfig struct {
-	MaxOpenConns    int
-	MaxIdleConns    int
-	ConnMaxIdleTime time.Duration
-	ConnMaxLifetime time.Duration
+	maxOpenConns    int
+	maxIdleConns    int
+	connMaxIdleTime time.Duration
+	connMaxLifetime time.Duration
 }
 
 func NewConnectionPoolConfig() ConnectionPoolConfig {
 	return ConnectionPoolConfig{
-		MaxOpenConns:    25,
-		MaxIdleConns:    25,
-		ConnMaxIdleTime: 5 * time.Minute,
-		ConnMaxLifetime: 5 * time.Minute,
+		maxOpenConns:    25,
+		maxIdleConns:    25,
+		connMaxIdleTime: 5 * time.Minute,
+		connMaxLifetime: 5 * time.Minute,
 	}
 }
 
 func NewClient(ctx context.Context, connectionDSN string) (*sql.DB, error) {
 	db, err := sql.Open("postgres", connectionDSN)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error opening database connection: %w", err)
 	}
 
-	connectionPoolConfig := NewConnectionPoolConfig()
-	db.SetMaxOpenConns(connectionPoolConfig.MaxOpenConns)
-	db.SetMaxIdleConns(connectionPoolConfig.MaxIdleConns)
-	db.SetConnMaxIdleTime(connectionPoolConfig.ConnMaxIdleTime)
-	db.SetConnMaxLifetime(connectionPoolConfig.ConnMaxLifetime)
+	config := NewConnectionPoolConfig()
+	db.SetMaxOpenConns(config.maxOpenConns)
+	db.SetMaxIdleConns(config.maxIdleConns)
+	db.SetConnMaxIdleTime(config.connMaxIdleTime)
+	db.SetConnMaxLifetime(config.connMaxLifetime)
 
 	err = pingUntilAvailable(ctx, db)
 	if err != nil {
@@ -54,25 +55,24 @@ func NewClient(ctx context.Context, connectionDSN string) (*sql.DB, error) {
 func RunMigrations(db *sql.DB, dbName string) error {
 	sourceInstance, err := iofs.New(fs, "migrations")
 	if err != nil {
-		return fmt.Errorf("sourceInstance error: %v", err)
+		return fmt.Errorf("sourceInstance error: %w", err)
 	}
 
 	targetInstance, err := pgMigrate.WithInstance(db, new(pgMigrate.Config))
 	if err != nil {
-		return fmt.Errorf("targetInstance error: %v", err)
+		return fmt.Errorf("targetInstance error: %w", err)
 	}
 
 	migrations, err := migrate.NewWithInstance("migrations", sourceInstance, dbName, targetInstance)
 	if err != nil {
-		return fmt.Errorf("migrate.NewWithInstance error: %v", err)
+		return fmt.Errorf("migrate.NewWithInstance error: %w", err)
 	}
 
 	err = migrations.Up()
-	if err != nil && err != migrate.ErrNoChange {
-		return fmt.Errorf("failed to migrate to latest version: %v", err)
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return fmt.Errorf("failed to migrate to latest version: %w", err)
 	}
-
-	return sourceInstance.Close()
+	return fmt.Errorf("%w", sourceInstance.Close())
 }
 
 func pingUntilAvailable(ctx context.Context, db *sql.DB) error {
@@ -84,5 +84,5 @@ func pingUntilAvailable(ctx context.Context, db *sql.DB) error {
 		time.Sleep(1 * time.Second)
 	}
 
-	return err
+	return fmt.Errorf("%w", err)
 }

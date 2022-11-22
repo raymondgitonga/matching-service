@@ -15,4 +15,12 @@ tests:
 run:
 	go run ./cmd/web
 
+ci_lint:
+	golangci-lint run ./... --fix
+
+format:
+	gofmt -w -s .
+
+linter: format ci_lint
+
 build: docker-compose-up run

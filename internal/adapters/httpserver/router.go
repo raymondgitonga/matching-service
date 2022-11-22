@@ -1,22 +1,30 @@
 package httpserver
 
 import (
-	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/raymondgitonga/matching-service/internal/core/dormain"
-	"github.com/raymondgitonga/matching-service/internal/core/repository"
-	"github.com/raymondgitonga/matching-service/internal/core/service"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/raymondgitonga/matching-service/internal/core/dormain"
+	"github.com/raymondgitonga/matching-service/internal/core/repository"
+	"github.com/raymondgitonga/matching-service/internal/core/service"
 )
 
 type Handler struct {
-	DB *sql.DB
+	dB *sql.DB
 }
 
+func NewHandler(db *sql.DB) (*Handler, error) {
+	if db == nil {
+		return nil, fmt.Errorf("db is null")
+	}
+	return &Handler{
+		db,
+	}, nil
+}
 func (h *Handler) HealthCheck(w http.ResponseWriter, _ *http.Request) {
 	response, err := json.Marshal("Healthy")
 	if err != nil {
@@ -37,12 +45,20 @@ func (h *Handler) GetPartnerDetails(w http.ResponseWriter, r *http.Request) {
 	partnerID, err := strconv.Atoi(ID)
 	if err != nil {
 		processResponse(w, nil, err, http.StatusBadRequest)
+		return
 	}
 
-	partnerService := service.NewPartnerService(repository.NewPartnerRepository(h.DB))
-	partner, err := partnerService.GetPartnerDetails(context.Background(), partnerID)
+	partnerRepo, err := repository.NewPartnerRepository(h.dB)
 	if err != nil {
 		processResponse(w, nil, err, http.StatusInternalServerError)
+		return
+	}
+
+	partnerService := service.NewPartnerService(partnerRepo)
+	partner, err := partnerService.GetPartnerDetails(r.Context(), partnerID)
+	if err != nil {
+		processResponse(w, nil, err, http.StatusInternalServerError)
+		return
 	}
 
 	partners = append(partners, *partner)
@@ -55,6 +71,7 @@ func (h *Handler) GetMatchingPartners(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		processResponse(w, []dormain.PartnerDTO{}, fmt.Errorf("error decoding body: %w", err), http.StatusBadRequest)
+		return
 	}
 
 	err = ValidateCustomerRequest(request)
@@ -63,8 +80,14 @@ func (h *Handler) GetMatchingPartners(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	partnerService := service.NewPartnerService(repository.NewPartnerRepository(h.DB))
-	partners, err := partnerService.GetMatchingPartners(context.Background(), request)
+	partnerRepo, err := repository.NewPartnerRepository(h.dB)
+	if err != nil {
+		processResponse(w, nil, err, http.StatusInternalServerError)
+		return
+	}
+
+	partnerService := service.NewPartnerService(partnerRepo)
+	partners, err := partnerService.GetMatchingPartners(r.Context(), request)
 	if err != nil {
 		processResponse(w, []dormain.PartnerDTO{}, err, http.StatusInternalServerError)
 		return
@@ -99,6 +122,11 @@ func processResponse(w http.ResponseWriter, partner []dormain.PartnerDTO, err er
 		Result:  partner,
 	}
 
-	jsonResponse, _ := json.Marshal(response)
+	jsonResponse, err := json.Marshal(response)
+
+	if err != nil {
+		log.Fatalf("error marshaling response: %s", err)
+		return
+	}
 	_, _ = w.Write(jsonResponse)
 }
