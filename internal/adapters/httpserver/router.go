@@ -4,12 +4,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/raymondgitonga/matching-service/internal/core/dormain"
-	"github.com/raymondgitonga/matching-service/internal/core/repository"
-	"github.com/raymondgitonga/matching-service/internal/core/service"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/raymondgitonga/matching-service/internal/core/dormain"
+	"github.com/raymondgitonga/matching-service/internal/core/repository"
+	"github.com/raymondgitonga/matching-service/internal/core/service"
 )
 
 type Handler struct {
@@ -44,17 +45,20 @@ func (h *Handler) GetPartnerDetails(w http.ResponseWriter, r *http.Request) {
 	partnerID, err := strconv.Atoi(ID)
 	if err != nil {
 		processResponse(w, nil, err, http.StatusBadRequest)
+		return
 	}
 
 	partnerRepo, err := repository.NewPartnerRepository(h.dB)
 	if err != nil {
 		processResponse(w, nil, err, http.StatusInternalServerError)
+		return
 	}
 
 	partnerService := service.NewPartnerService(partnerRepo)
 	partner, err := partnerService.GetPartnerDetails(r.Context(), partnerID)
 	if err != nil {
 		processResponse(w, nil, err, http.StatusInternalServerError)
+		return
 	}
 
 	partners = append(partners, *partner)
@@ -67,6 +71,7 @@ func (h *Handler) GetMatchingPartners(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		processResponse(w, []dormain.PartnerDTO{}, fmt.Errorf("error decoding body: %w", err), http.StatusBadRequest)
+		return
 	}
 
 	err = ValidateCustomerRequest(request)
@@ -78,6 +83,7 @@ func (h *Handler) GetMatchingPartners(w http.ResponseWriter, r *http.Request) {
 	partnerRepo, err := repository.NewPartnerRepository(h.dB)
 	if err != nil {
 		processResponse(w, nil, err, http.StatusInternalServerError)
+		return
 	}
 
 	partnerService := service.NewPartnerService(partnerRepo)
