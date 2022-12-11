@@ -4,12 +4,10 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
-	"github.com/raymondgitonga/matching_client/cmd"
 )
 
 func main() {
-	appConfig := cmd.NewAppConfigs("/match")
+	appConfig := NewAppConfigs("/match")
 
 	router, err := appConfig.StartApp()
 
