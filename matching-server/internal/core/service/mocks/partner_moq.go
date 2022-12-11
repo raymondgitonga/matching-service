@@ -5,9 +5,10 @@ package mocks
 
 import (
 	"context"
-	"github.com/raymondgitonga/matching-service/internal/core/dormain"
-	"github.com/raymondgitonga/matching-service/internal/core/service"
 	"sync"
+
+	"github.com/raymondgitonga/matching-server/internal/core/dormain"
+	"github.com/raymondgitonga/matching-server/internal/core/service"
 )
 
 // Ensure, that RepositoryMock does implement Repository.

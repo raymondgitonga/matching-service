@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/raymondgitonga/matching-service/internal/adapters/db"
-	"github.com/raymondgitonga/matching-service/internal/adapters/httpserver"
 	"net/http"
+
+	"github.com/gorilla/mux"
+	"github.com/raymondgitonga/matching-server/internal/adapters/db"
+	"github.com/raymondgitonga/matching-server/internal/adapters/httpserver"
 )
 
 type AppConfigs struct {

@@ -1,9 +1,10 @@
 package service_test
 
 import (
-	"github.com/raymondgitonga/matching-service/internal/core/service"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/raymondgitonga/matching-server/internal/core/service"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestService_CalculateDistance(t *testing.T) {

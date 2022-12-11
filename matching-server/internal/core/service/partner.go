@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/raymondgitonga/matching-service/internal/core/dormain"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/raymondgitonga/matching-server/internal/core/dormain"
 )
 
 type PartnerService struct {

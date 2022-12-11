@@ -1,4 +1,4 @@
-module github.com/raymondgitonga/matching_integration
+module github.com/raymondgitonga/matching_client
 
 go 1.19
 

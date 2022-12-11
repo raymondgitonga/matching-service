@@ -3,11 +3,12 @@ package service_test
 import (
 	"context"
 	"encoding/json"
-	"github.com/raymondgitonga/matching-service/internal/core/dormain"
-	"github.com/raymondgitonga/matching-service/internal/core/service"
-	"github.com/raymondgitonga/matching-service/internal/core/service/mocks"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/raymondgitonga/matching-server/internal/core/dormain"
+	"github.com/raymondgitonga/matching-server/internal/core/service"
+	"github.com/raymondgitonga/matching-server/internal/core/service/mocks"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestService_GetPartnerDetails(t *testing.T) {

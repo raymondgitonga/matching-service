@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/raymondgitonga/matching_integration/cmd"
 	"net/http"
 	"time"
+
+	"github.com/raymondgitonga/matching_client/cmd"
 )
 
 func main() {

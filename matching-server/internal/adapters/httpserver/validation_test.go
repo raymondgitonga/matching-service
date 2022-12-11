@@ -1,9 +1,10 @@
 package httpserver
 
 import (
-	"github.com/raymondgitonga/matching-service/internal/core/dormain"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/raymondgitonga/matching-server/internal/core/dormain"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestHandler_ValidateCustomerRequest(t *testing.T) {

@@ -4,7 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/raymondgitonga/matching-service/internal/core/dormain"
+
+	"github.com/raymondgitonga/matching-server/internal/core/dormain"
 )
 
 type PartnerRepository struct {

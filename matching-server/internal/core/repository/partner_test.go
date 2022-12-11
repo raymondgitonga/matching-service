@@ -6,9 +6,10 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/raymondgitonga/matching-server/internal/adapters/db"
+	"github.com/raymondgitonga/matching-server/internal/core/repository"
+
 	"github.com/google/uuid"
-	"github.com/raymondgitonga/matching-service/internal/adapters/db"
-	"github.com/raymondgitonga/matching-service/internal/core/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 )

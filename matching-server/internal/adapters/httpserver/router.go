@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/raymondgitonga/matching-service/internal/core/dormain"
-	"github.com/raymondgitonga/matching-service/internal/core/repository"
-	"github.com/raymondgitonga/matching-service/internal/core/service"
+	"github.com/raymondgitonga/matching-server/internal/core/dormain"
+	"github.com/raymondgitonga/matching-server/internal/core/repository"
+	"github.com/raymondgitonga/matching-server/internal/core/service"
 )
 
 type Handler struct {

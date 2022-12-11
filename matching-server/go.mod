@@ -1,4 +1,4 @@
-module github.com/raymondgitonga/matching-service
+module github.com/raymondgitonga/matching-server
 
 go 1.19
 

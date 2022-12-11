@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/gorilla/mux"
-	"github.com/raymondgitonga/matching_integration/internal/adapters/httpserver"
+	"github.com/raymondgitonga/matching_client/internal/adapters/httpserver"
 )
 
 type AppConfigs struct {
