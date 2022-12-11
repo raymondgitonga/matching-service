@@ -1,4 +1,4 @@
-# Matching Service
+# Matching Client
 
 This service matches partners (craftsman) to a customer based
 on their project requirements.
