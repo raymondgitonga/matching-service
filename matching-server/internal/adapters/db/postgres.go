@@ -6,11 +6,12 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/golang-migrate/migrate/v4"
 	pgMigrate "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	_ "github.com/lib/pq"
-	"time"
 )
 
 //go:embed migrations/*.sql
@@ -72,7 +73,7 @@ func RunMigrations(db *sql.DB, dbName string) error {
 	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return fmt.Errorf("failed to migrate to latest version: %w", err)
 	}
-	return fmt.Errorf("%w", sourceInstance.Close())
+	return sourceInstance.Close()
 }
 
 func pingUntilAvailable(ctx context.Context, db *sql.DB) error {
