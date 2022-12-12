@@ -18,6 +18,7 @@ func (c *AppConfigs) StartApp() (*mux.Router, error) {
 	r := mux.NewRouter()
 	handler := httpserver.Handler{}
 	r.HandleFunc(fmt.Sprintf("%s/health-check", c.baseURL), handler.HealthCheck)
+	r.HandleFunc(fmt.Sprintf("%s/partner", c.baseURL), handler.GetPartnerDetails)
 
 	return r, nil
 }

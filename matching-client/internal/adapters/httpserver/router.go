@@ -3,7 +3,12 @@ package httpserver
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+
+	"github.com/raymondgitonga/matching_client/internal/adapters/httpclient"
+	"github.com/raymondgitonga/matching_client/internal/core/dormain"
+	"github.com/raymondgitonga/matching_client/internal/core/service"
 )
 
 type Handler struct{}
@@ -19,4 +24,64 @@ func (h *Handler) HealthCheck(w http.ResponseWriter, _ *http.Request) {
 	if err != nil {
 		fmt.Printf("error writing httpserver response: %s", err)
 	}
+}
+
+func (h *Handler) GetPartnerDetails(w http.ResponseWriter, r *http.Request) {
+	partnerID := r.URL.Query().Get("id")
+	client := http.Client{}
+
+	matchingCLient, err := httpclient.NewMatchingClient(client)
+	if err != nil {
+		processResponse(w, nil, err, http.StatusInternalServerError)
+		return
+	}
+
+	partnerService := service.NewMatchingPartner(matchingCLient)
+	if err != nil {
+		processResponse(w, nil, err, http.StatusInternalServerError)
+		return
+	}
+
+	partners, err := partnerService.GetMatchingPartner(partnerID)
+	if err != nil {
+		processResponse(w, nil, err, http.StatusInternalServerError)
+		return
+	}
+
+	processResponse(w, partners.Result, nil, http.StatusOK)
+}
+
+func processResponse(w http.ResponseWriter, results []dormain.Result, err error, status int) {
+	w.Header().Set("Content-Type", "application/json")
+	var response dormain.Partner
+
+	if err != nil {
+		response = dormain.Partner{
+			Error:   true,
+			Message: err.Error(),
+			Result:  []dormain.Result{},
+		}
+		jsonResponse, err := json.Marshal(response)
+		if err != nil {
+			log.Fatalf("error marshaling response: %s", err)
+		}
+
+		w.WriteHeader(status)
+		_, _ = w.Write(jsonResponse)
+		return
+	}
+
+	response = dormain.Partner{
+		Error:   false,
+		Message: "success",
+		Result:  results,
+	}
+
+	jsonResponse, err := json.Marshal(response)
+
+	if err != nil {
+		log.Fatalf("error marshaling response: %s", err)
+		return
+	}
+	_, _ = w.Write(jsonResponse)
 }
