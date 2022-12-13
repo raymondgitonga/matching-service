@@ -3,13 +3,11 @@ package service
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-
 	"github.com/raymondgitonga/matching_client/internal/core/dormain"
 )
 
 type MatchingClient interface {
-	GetPartner(partnerID string) (io.ReadCloser, error)
+	GetPartner(partnerID string) ([]byte, error)
 }
 
 type PartnerService struct {
@@ -25,13 +23,11 @@ func (m *PartnerService) GetMatchingPartner(partnerID string) (*dormain.Partner,
 	var partner dormain.Partner
 
 	response, err := m.matchingClient.GetPartner(partnerID)
-	defer response.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	err = json.NewDecoder(response).Decode(&partner)
-	fmt.Println("alaaa", partner)
+	err = json.Unmarshal(response, &partner)
 	if err != nil {
 		return nil, err
 	}
