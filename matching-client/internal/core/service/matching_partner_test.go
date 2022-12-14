@@ -49,4 +49,21 @@ func TestPartnerService_GetMatchingPartner(t *testing.T) {
 		assert.Equal(t, err.Error(), "error reading partner call: No partner found")
 		assert.Nil(t, partner)
 	})
+
+	t.Run("Test Matching no partner returned", func(t *testing.T) {
+		matchingClient := &mocks.MatchingClientMock{
+			GetPartnerFunc: func(parnterID string) (*httpclient.Partner, error) {
+				return &httpclient.Partner{
+					Result:  []httpclient.Result{},
+					Error:   false,
+					Message: "success",
+				}, nil
+			},
+		}
+		partnerService := service.NewMatchingPartner(matchingClient)
+		partner, err := partnerService.GetMatchingPartner("1")
+
+		assert.Nil(t, partner)
+		assert.Equal(t, "no results found", err.Error())
+	})
 }

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"github.com/raymondgitonga/matching_client/internal/adapters/httpclient"
 	"github.com/raymondgitonga/matching_client/internal/core/dormain"
 )
@@ -28,6 +29,9 @@ func (m *PartnerService) GetMatchingPartner(partnerID string) (*dormain.Partner,
 		return nil, err
 	}
 
+	if len(resp.Result) < 1 {
+		return nil, fmt.Errorf("no results found")
+	}
 	result := resp.Result[0]
 	partner = dormain.Partner{
 		Result: []dormain.Result{
