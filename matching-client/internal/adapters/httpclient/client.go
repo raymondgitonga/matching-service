@@ -7,8 +7,6 @@ import (
 	"os"
 )
 
-const matchingURL = "https://dadf-188-80-46-56.eu.ngrok.io/"
-
 type Config struct {
 	matchingURL string
 }
@@ -21,13 +19,14 @@ type MatchingClient struct {
 func NewConfig() *Config {
 	return &Config{os.Getenv("MATCHING_URL")}
 }
+
 func NewMatchingClient(client http.Client, config Config) (*MatchingClient, error) {
 	return &MatchingClient{client: client, config: config}, nil
 }
 
 func (m MatchingClient) GetPartner(partnerID string) (*Partner, error) {
 	var partner Partner
-	partnerURL := fmt.Sprintf("%smatching-service/partner?id=%s", matchingURL, partnerID)
+	partnerURL := fmt.Sprintf("%smatching-service/partner?id=%s", m.config.matchingURL, partnerID)
 	resp, err := m.client.Get(partnerURL)
 
 	if err != nil {
