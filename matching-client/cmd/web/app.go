@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/raymondgitonga/matching_client/internal/adapters/httpclient"
 
 	"github.com/gorilla/mux"
 	"github.com/raymondgitonga/matching_client/internal/adapters/httpserver"
@@ -16,7 +17,7 @@ func NewAppConfigs(baseURL string) *AppConfigs {
 }
 func (c *AppConfigs) StartApp() (*mux.Router, error) {
 	r := mux.NewRouter()
-	handler := httpserver.Handler{}
+	handler := httpserver.NewHandler(httpclient.NewConfig())
 	r.HandleFunc(fmt.Sprintf("%s/health-check", c.baseURL), handler.HealthCheck)
 	r.HandleFunc(fmt.Sprintf("%s/partner", c.baseURL), handler.GetPartnerDetails)
 

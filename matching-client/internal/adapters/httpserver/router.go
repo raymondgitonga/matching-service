@@ -11,7 +11,13 @@ import (
 	"github.com/raymondgitonga/matching_client/internal/core/service"
 )
 
-type Handler struct{}
+type Handler struct {
+	*httpclient.Config
+}
+
+func NewHandler(httpClient *httpclient.Config) *Handler {
+	return &Handler{httpClient}
+}
 
 func (h *Handler) HealthCheck(w http.ResponseWriter, _ *http.Request) {
 	response, err := json.Marshal("Healthy")
@@ -30,7 +36,7 @@ func (h *Handler) GetPartnerDetails(w http.ResponseWriter, r *http.Request) {
 	partnerID := r.URL.Query().Get("id")
 	client := http.Client{}
 
-	matchingCLient, err := httpclient.NewMatchingClient(client, *httpclient.NewConfig())
+	matchingCLient, err := httpclient.NewMatchingClient(client, *h.Config)
 	if err != nil {
 		processResponse(w, nil, err, http.StatusInternalServerError)
 		return
