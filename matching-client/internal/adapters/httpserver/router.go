@@ -30,7 +30,7 @@ func (h *Handler) GetPartnerDetails(w http.ResponseWriter, r *http.Request) {
 	partnerID := r.URL.Query().Get("id")
 	client := http.Client{}
 
-	matchingCLient, err := httpclient.NewMatchingClient(client)
+	matchingCLient, err := httpclient.NewMatchingClient(client, *httpclient.NewConfig())
 	if err != nil {
 		processResponse(w, nil, err, http.StatusInternalServerError)
 		return
@@ -57,7 +57,6 @@ func processResponse(w http.ResponseWriter, results []dormain.Result, err error,
 
 	if err != nil {
 		response = dormain.Partner{
-			Error:   true,
 			Message: err.Error(),
 			Result:  []dormain.Result{},
 		}
@@ -72,7 +71,6 @@ func processResponse(w http.ResponseWriter, results []dormain.Result, err error,
 	}
 
 	response = dormain.Partner{
-		Error:   false,
 		Message: "success",
 		Result:  results,
 	}

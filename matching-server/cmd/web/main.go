@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/joho/godotenv"
 	"log"
 	"net/http"
@@ -35,6 +36,7 @@ func main() {
 		Handler:           router,
 	}
 
+	fmt.Println("starting server on :8080")
 	err = server.ListenAndServe()
 	if err != nil {
 		log.Fatalf("error starting server: %s", err)

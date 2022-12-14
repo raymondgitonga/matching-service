@@ -53,7 +53,5 @@ func (c *AppConfigs) StartApp() (*mux.Router, error) {
 	r.HandleFunc(fmt.Sprintf("%s/partner", baseURL), handler.GetPartnerDetails).Methods(http.MethodGet)
 	r.HandleFunc(fmt.Sprintf("%s/partners", baseURL), handler.GetMatchingPartners).Methods(http.MethodPost)
 
-	fmt.Printf("starting server on :8080")
-
 	return r, nil
 }

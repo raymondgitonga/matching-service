@@ -2,12 +2,20 @@ package main
 
 import (
 	"fmt"
+	"github.com/joho/godotenv"
 	"net/http"
+	"os"
 	"time"
 )
 
 func main() {
-	appConfig := NewAppConfigs("/match")
+	err := godotenv.Load()
+	if err != nil {
+		fmt.Printf("error loading configs: %s", err)
+		return
+	}
+
+	appConfig := NewAppConfigs(os.Getenv("BASE_URL"))
 
 	router, err := appConfig.StartApp()
 
@@ -21,6 +29,8 @@ func main() {
 		ReadHeaderTimeout: 3 * time.Second,
 		Handler:           router,
 	}
+
+	fmt.Println("starting server on :8081")
 	err = server.ListenAndServe()
 	if err != nil {
 		fmt.Printf("error starting server: %s", err)

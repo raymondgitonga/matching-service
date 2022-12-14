@@ -1,23 +1,33 @@
 package httpclient
 
 import (
+	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
+	"os"
 )
 
-const matchingURL = "https:"
+const matchingURL = "https://dadf-188-80-46-56.eu.ngrok.io/"
+
+type Config struct {
+	matchingURL string
+}
 
 type MatchingClient struct {
 	client http.Client
+	config Config
 }
 
-func NewMatchingClient(client http.Client) (*MatchingClient, error) {
-	return &MatchingClient{client: client}, nil
+func NewConfig() *Config {
+	return &Config{os.Getenv("MATCHING_URL")}
+}
+func NewMatchingClient(client http.Client, config Config) (*MatchingClient, error) {
+	return &MatchingClient{client: client, config: config}, nil
 }
 
-func (m MatchingClient) GetPartner(partnerID string) ([]byte, error) {
-	partnerURL := fmt.Sprintf("%spartner?id=%s", matchingURL, partnerID)
+func (m MatchingClient) GetPartner(partnerID string) (*Partner, error) {
+	var partner Partner
+	partnerURL := fmt.Sprintf("%smatching-service/partner?id=%s", matchingURL, partnerID)
 	resp, err := m.client.Get(partnerURL)
 
 	if err != nil {
@@ -25,10 +35,14 @@ func (m MatchingClient) GetPartner(partnerID string) ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	b, err := io.ReadAll(resp.Body)
+	err = json.NewDecoder(resp.Body).Decode(&partner)
 	if err != nil {
-		return nil, fmt.Errorf("error reading partner call: %w", err)
+		return nil, fmt.Errorf("error decoding partner call: %w", err)
 	}
 
-	return b, nil
+	if partner.Error {
+		return nil, fmt.Errorf("error reading partner call: %s", partner.Message)
+	}
+
+	return &partner, nil
 }

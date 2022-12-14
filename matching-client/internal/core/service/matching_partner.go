@@ -1,13 +1,12 @@
 package service
 
 import (
-	"encoding/json"
-	"fmt"
+	"github.com/raymondgitonga/matching_client/internal/adapters/httpclient"
 	"github.com/raymondgitonga/matching_client/internal/core/dormain"
 )
 
 type MatchingClient interface {
-	GetPartner(partnerID string) ([]byte, error)
+	GetPartner(partnerID string) (*httpclient.Partner, error)
 }
 
 type PartnerService struct {
@@ -19,17 +18,29 @@ func NewMatchingPartner(matchingClient MatchingClient) *PartnerService {
 }
 
 func (m *PartnerService) GetMatchingPartner(partnerID string) (*dormain.Partner, error) {
-	fmt.Println(partnerID)
 	var partner dormain.Partner
-
-	response, err := m.matchingClient.GetPartner(partnerID)
+	resp, err := m.matchingClient.GetPartner(partnerID)
 	if err != nil {
 		return nil, err
 	}
 
-	err = json.Unmarshal(response, &partner)
 	if err != nil {
 		return nil, err
 	}
+
+	result := resp.Result[0]
+	partner = dormain.Partner{
+		Result: []dormain.Result{
+			{
+				Name:     result.Name,
+				Location: result.Location,
+				Material: result.Material,
+				Radius:   result.Radius,
+				Rating:   result.Rating,
+			},
+		},
+		Message: resp.Message,
+	}
+
 	return &partner, nil
 }

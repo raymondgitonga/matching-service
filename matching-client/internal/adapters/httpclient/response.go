@@ -1,7 +1,8 @@
-package dormain
+package httpclient
 
 type Partner struct {
 	Result  []Result `json:"result"`
+	Error   bool     `json:"error"`
 	Message string   `json:"message"`
 }
 
