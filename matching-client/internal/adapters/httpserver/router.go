@@ -36,17 +36,8 @@ func (h *Handler) GetPartnerDetails(w http.ResponseWriter, r *http.Request) {
 	partnerID := r.URL.Query().Get("id")
 	client := http.Client{}
 
-	matchingCLient, err := httpclient.NewMatchingClient(client, *h.Config)
-	if err != nil {
-		processResponse(w, nil, err, http.StatusInternalServerError)
-		return
-	}
-
+	matchingCLient := httpclient.NewMatchingClient(client, *h.Config)
 	partnerService := service.NewMatchingPartner(matchingCLient)
-	if err != nil {
-		processResponse(w, nil, err, http.StatusInternalServerError)
-		return
-	}
 
 	partners, err := partnerService.GetMatchingPartner(partnerID)
 	if err != nil {

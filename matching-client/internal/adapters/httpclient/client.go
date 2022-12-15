@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 )
 
 type Config struct {
@@ -16,17 +15,17 @@ type MatchingClient struct {
 	config Config
 }
 
-func NewConfig() *Config {
-	return &Config{os.Getenv("MATCHING_URL")}
+func NewConfig(matchURL string) *Config {
+	return &Config{matchingURL: matchURL}
 }
 
-func NewMatchingClient(client http.Client, config Config) (*MatchingClient, error) {
-	return &MatchingClient{client: client, config: config}, nil
+func NewMatchingClient(client http.Client, config Config) *MatchingClient {
+	return &MatchingClient{client: client, config: config}
 }
 
 func (m MatchingClient) GetPartner(partnerID string) (*Partner, error) {
 	var partner Partner
-	partnerURL := fmt.Sprintf("%smatching-service/partner?id=%s", m.config.matchingURL, partnerID)
+	partnerURL := fmt.Sprintf("%s/matching-service/partner?id=%s", m.config.matchingURL, partnerID)
 	resp, err := m.client.Get(partnerURL)
 
 	if err != nil {
@@ -40,6 +39,7 @@ func (m MatchingClient) GetPartner(partnerID string) (*Partner, error) {
 	}
 
 	if partner.Error {
+		fmt.Println(partner.Error)
 		return nil, fmt.Errorf("error reading partner call: %s", partner.Message)
 	}
 

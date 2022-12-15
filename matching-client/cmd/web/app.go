@@ -9,15 +9,16 @@ import (
 )
 
 type AppConfigs struct {
-	baseURL string
+	baseURL  string
+	matchURL string
 }
 
-func NewAppConfigs(baseURL string) *AppConfigs {
-	return &AppConfigs{baseURL: baseURL}
+func NewAppConfigs(baseURL string, matchURL string) *AppConfigs {
+	return &AppConfigs{baseURL: baseURL, matchURL: matchURL}
 }
 func (c *AppConfigs) StartApp() (*mux.Router, error) {
 	r := mux.NewRouter()
-	handler := httpserver.NewHandler(httpclient.NewConfig())
+	handler := httpserver.NewHandler(httpclient.NewConfig(c.matchURL))
 	r.HandleFunc(fmt.Sprintf("%s/health-check", c.baseURL), handler.HealthCheck)
 	r.HandleFunc(fmt.Sprintf("%s/partner", c.baseURL), handler.GetPartnerDetails)
 

@@ -15,7 +15,7 @@ func main() {
 		return
 	}
 
-	appConfig := NewAppConfigs(os.Getenv("BASE_URL"))
+	appConfig := NewAppConfigs(os.Getenv("BASE_URL"), os.Getenv("MATCHING_URL"))
 
 	router, err := appConfig.StartApp()
 
